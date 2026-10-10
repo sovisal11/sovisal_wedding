@@ -104,7 +104,9 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
+            background: #050806;
         }
         .camera-frame video.front-camera { transform: scaleX(-1); }
         .camera-frame img { display: none; }
@@ -280,7 +282,7 @@
         }
         .camera-frame video,
         .camera-frame img {
-            object-fit: cover;
+            object-fit: contain;
             object-position: center;
         }
         .top-bar {
@@ -616,10 +618,7 @@
                 const constraints = {
                     audio: false,
                     video: {
-                        facingMode: { exact: nextFacingMode },
-                        aspectRatio: { ideal: 9 / 16 },
-                        width: { ideal: 720 },
-                        height: { ideal: 1280 }
+                        facingMode: { exact: nextFacingMode }
                     }
                 };
                 try {
@@ -646,10 +645,7 @@
                     requestedStream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
                         video: {
-                            deviceId: { exact: device.deviceId },
-                            aspectRatio: { ideal: 9 / 16 },
-                            width: { ideal: 720 },
-                            height: { ideal: 1280 }
+                            deviceId: { exact: device.deviceId }
                         }
                     });
                 }
