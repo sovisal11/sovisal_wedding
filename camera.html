@@ -299,6 +299,36 @@
         }
         .top-title { display: none; }
         .top-tools { grid-column: 2; gap: 12px; }
+        .camera-device-picker {
+            position: absolute;
+            z-index: 3;
+            top: calc(74px + env(safe-area-inset-top));
+            left: 16px;
+            right: 16px;
+            display: grid;
+            justify-items: center;
+            gap: 4px;
+            pointer-events: none;
+        }
+        .camera-device-picker[hidden] { display: none; }
+        .camera-device-picker select {
+            max-width: min(100%, 320px);
+            min-height: 40px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 8px;
+            background: rgba(12, 16, 14, 0.78);
+            color: #fff;
+            pointer-events: auto;
+        }
+        .camera-device-label {
+            margin: 0;
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+        }
+        .camera-device-label:empty { display: none; }
         .top-action {
             width: 46px;
             height: 46px;
@@ -414,6 +444,12 @@
             </div>
         </header>
 
+        <div id="camera-device-picker" class="camera-device-picker" hidden>
+            <label class="visually-hidden" for="camera-device-select">Select camera lens</label>
+            <select id="camera-device-select" aria-label="Select camera lens" disabled></select>
+            <p id="camera-device-label" class="camera-device-label" aria-live="polite"></p>
+        </div>
+
         <main class="camera-region">
             <section id="camera-frame" class="camera-frame" aria-label="Camera preview">
                 <video id="camera-video" autoplay playsinline muted aria-label="Live camera preview"></video>
@@ -461,6 +497,9 @@
         const acceptButton = document.getElementById('accept-button');
         const acceptedMessage = document.getElementById('accepted-message');
         const canvas = document.getElementById('capture-canvas');
+        const devicePicker = document.getElementById('camera-device-picker');
+        const deviceSelect = document.getElementById('camera-device-select');
+        const selectedCameraLabel = document.getElementById('camera-device-label');
 
         let stream = null;
         let facingMode = 'environment';
@@ -469,6 +508,7 @@
         let acceptedPhoto = null;
         let previewUrl = null;
         let flashEnabled = false;
+        let availableCameras = [];
 
         function stopStream(mediaStream) {
             if (mediaStream) {
@@ -581,7 +621,93 @@
             };
         }
 
-        async function startCamera(nextFacingMode = facingMode) {
+        function getLensHint(deviceLabel) {
+            const label = deviceLabel.toLowerCase();
+            if (/ultra[\s-]?wide|ultrawide/.test(label)) {
+                return 'ultra-wide (based on device label)';
+            }
+            if (/telephoto|tele[\s-]?photo|periscope/.test(label)) {
+                return 'telephoto (based on device label)';
+            }
+            if (/\bwide\b/.test(label)) {
+                return 'wide (based on device label)';
+            }
+            return 'not identified by the browser-provided label';
+        }
+
+        async function logCameraDiagnostics(mediaStream, requestedFacingMode) {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const track = mediaStream.getVideoTracks()[0];
+                const settings = track?.getSettings?.() || {};
+                const selectedDeviceId = settings.deviceId || '';
+                const selectedDevice = videoDevices.find(device => device.deviceId === selectedDeviceId);
+                const selectedLabel = selectedDevice?.label || '';
+                let capabilities = {};
+
+                try {
+                    capabilities = track?.getCapabilities?.() || {};
+                } catch (error) {
+                    console.warn('Camera diagnostics: could not read track capabilities.', error);
+                }
+
+                console.group(`Camera diagnostics — requested ${requestedFacingMode} camera`);
+                console.table(videoDevices.map((device, index) => ({
+                    index,
+                    selected: Boolean(selectedDeviceId && device.deviceId === selectedDeviceId),
+                    label: device.label || '(browser did not provide a label)',
+                    deviceId: device.deviceId || '(browser did not provide an ID)'
+                })));
+                console.info('Selected camera', {
+                    requestedFacingMode,
+                    reportedFacingMode: settings.facingMode || '(not reported)',
+                    selectedDeviceLabel: selectedLabel || '(could not match track device ID to an enumerated label)',
+                    selectedDeviceId: selectedDeviceId || '(not reported)',
+                    trackResolution: settings.width && settings.height
+                        ? `${settings.width}x${settings.height}`
+                        : '(not reported)',
+                    zoomCapability: capabilities.zoom || '(not reported)',
+                    lensHint: getLensHint(selectedLabel)
+                });
+                console.info('Lens type is inferred only from the browser-provided label; a generic label cannot distinguish wide, ultra-wide, or telephoto hardware.');
+                console.groupEnd();
+                return videoDevices;
+            } catch (error) {
+                console.warn('Camera diagnostics: could not enumerate video input devices after permission was granted.', error);
+                return [];
+            }
+        }
+
+        function updateCameraDevicePicker(devices, mediaStream) {
+            availableCameras = devices;
+            const track = mediaStream.getVideoTracks()[0];
+            const selectedDeviceId = track?.getSettings?.().deviceId || '';
+            const selectedDevice = devices.find(device => device.deviceId === selectedDeviceId);
+
+            deviceSelect.replaceChildren();
+            devices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Camera ${index + 1} (label unavailable)`;
+                deviceSelect.appendChild(option);
+            });
+
+            devicePicker.hidden = devices.length === 0;
+            deviceSelect.disabled = devices.length < 2 || !selectedDeviceId;
+            if (selectedDeviceId && devices.some(device => device.deviceId === selectedDeviceId)) {
+                deviceSelect.value = selectedDeviceId;
+            }
+            selectedCameraLabel.textContent = selectedDevice?.label
+                ? `Selected camera: ${selectedDevice.label}`
+                : track?.label
+                    ? `Selected camera: ${track.label}`
+                    : selectedDeviceId
+                        ? 'Selected camera label is not available in this browser.'
+                        : 'The browser did not report the selected camera ID.';
+        }
+
+        async function startCamera(nextFacingMode = facingMode, requestedDeviceId = null) {
             const currentRequest = ++requestId;
             const previousStream = stream;
             const previousDeviceId = previousStream?.getVideoTracks()[0]?.getSettings().deviceId;
@@ -598,6 +724,7 @@
             acceptedPhoto = null;
             flashEnabled = false;
             flashButton.setAttribute('aria-pressed', 'false');
+            deviceSelect.disabled = true;
             setLoading('Starting your camera…');
 
             const environmentError = getCameraEnvironmentError();
@@ -617,14 +744,14 @@
             try {
                 const constraints = {
                     audio: false,
-                    video: {
-                        facingMode: { exact: nextFacingMode }
-                    }
+                    video: requestedDeviceId
+                        ? { deviceId: { exact: requestedDeviceId } }
+                        : { facingMode: { exact: nextFacingMode } }
                 };
                 try {
                     requestedStream = await navigator.mediaDevices.getUserMedia(constraints);
                 } catch (error) {
-                    if (!['OverconstrainedError', 'ConstraintNotSatisfiedError', 'NotFoundError'].includes(error.name)) {
+                    if (requestedDeviceId || !['OverconstrainedError', 'ConstraintNotSatisfiedError', 'NotFoundError'].includes(error.name)) {
                         throw error;
                     }
                     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -656,9 +783,17 @@
                 }
 
                 stream = requestedStream;
-                facingMode = nextFacingMode;
+                facingMode = requestedStream.getVideoTracks()[0]?.getSettings?.().facingMode || nextFacingMode;
                 video.classList.toggle('front-camera', facingMode === 'user');
                 video.srcObject = stream;
+                const cameraDevices = await logCameraDiagnostics(requestedStream, facingMode);
+                updateCameraDevicePicker(cameraDevices, requestedStream);
+
+                if (currentRequest !== requestId) {
+                    stopStream(requestedStream);
+                    return;
+                }
+
                 await video.play();
 
                 if (currentRequest !== requestId) {
@@ -824,6 +959,11 @@
 
         captureButton.addEventListener('click', capturePhoto);
         retryButton.addEventListener('click', () => startCamera(facingMode));
+        deviceSelect.addEventListener('change', () => {
+            if (deviceSelect.value && availableCameras.some(device => device.deviceId === deviceSelect.value)) {
+                startCamera(facingMode, deviceSelect.value);
+            }
+        });
         flipButton.addEventListener('click', () => {
             const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
             startCamera(nextFacingMode);
