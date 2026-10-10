@@ -104,16 +104,12 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             object-position: center;
             background: #050806;
         }
         .camera-frame video { transform: scale(var(--digital-zoom, 1)); }
         .camera-frame video.front-camera { transform: scaleX(-1) scale(var(--digital-zoom, 1)); }
-        .camera-frame[data-filter="golden-romance"] video { filter: sepia(0.2) saturate(1.2) brightness(1.04); }
-        .camera-frame[data-filter="emerald-garden"] video { filter: saturate(0.84) hue-rotate(8deg) contrast(1.04); }
-        .camera-frame[data-filter="soft-sunset"] video { filter: sepia(0.15) saturate(1.14) brightness(1.06); }
-        .camera-frame[data-filter="classic-wedding"] video { filter: saturate(0.72) contrast(1.07) brightness(1.03); }
         .camera-frame img { display: none; }
         .camera-frame.is-captured video { display: none; }
         .camera-frame.is-captured img { display: block; }
@@ -341,76 +337,68 @@
         }
         .accepted-message[hidden] { display: none; }
         .zoom-chips {
-            position: absolute;
-            z-index: 2;
-            top: calc(82px + env(safe-area-inset-top));
-            left: 50%;
             display: flex;
-            gap: 8px;
-            transform: translateX(-50%);
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 38px;
+            touch-action: none;
+            user-select: none;
         }
         .zoom-chips[hidden] { display: none; }
         .zoom-chip {
-            min-width: 42px;
-            min-height: 34px;
-            padding: 0 9px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 999px;
-            background: rgba(15, 19, 17, 0.42);
-            color: rgba(255, 255, 255, 0.86);
-            font-size: 12px;
-            font-weight: 500;
-            backdrop-filter: blur(8px);
-        }
-        .zoom-chip[aria-pressed="true"] {
-            border-color: rgba(255, 255, 255, 0.72);
-            background: rgba(255, 255, 255, 0.86);
-            color: #172018;
-        }
-        .filter-panel {
             display: grid;
-            gap: 4px;
-            width: min(100%, 340px);
-            padding: 8px 10px 10px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 16px;
-            background: rgba(18, 24, 21, 0.42);
-            backdrop-filter: blur(14px);
-        }
-        .filter-panel[hidden] { display: none; }
-        .filter-current {
-            min-height: 15px;
-            color: rgba(255, 255, 255, 0.94);
+            place-items: center;
+            min-width: 36px;
+            min-height: 36px;
+            padding: 0 7px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(16, 20, 18, 0.24);
+            color: rgba(255, 255, 255, 0.88);
             font-size: 11px;
             font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+        }
+        .zoom-chip[aria-pressed="true"] {
+            background: rgba(255, 255, 255, 0.9);
+            color: #172018;
+            font-weight: 600;
+            text-shadow: none;
+            transform: scale(1.08);
+        }
+        .wedding-style-label {
+            max-width: min(80vw, 280px);
+            margin: 0;
+            padding: 7px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 999px;
+            background: rgba(17, 23, 19, 0.3);
+            color: rgba(255, 255, 255, 0.96);
+            font-family: Georgia, serif;
+            font-size: 13px;
+            letter-spacing: 0.035em;
+            text-align: center;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.52);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .style-discovery {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 11px;
+            letter-spacing: 0.025em;
             text-align: center;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
         }
-        .filter-selector {
-            display: flex;
-            gap: 7px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            touch-action: none;
-            overscroll-behavior-x: contain;
-            cursor: grab;
+        .style-discovery.is-visible {
+            animation: discovery-fade 4.5s ease forwards;
         }
-        .filter-selector::-webkit-scrollbar { display: none; }
-        .filter-option {
-            flex: 0 0 auto;
-            min-height: 30px;
-            padding: 0 10px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.72);
-            font-size: 10px;
-            white-space: nowrap;
-        }
-        .filter-option[aria-pressed="true"] {
-            border-color: rgba(255, 255, 255, 0.68);
-            background: rgba(255, 255, 255, 0.88);
-            color: #182019;
+        @keyframes discovery-fade {
+            0%, 55% { opacity: 0.82; }
+            100% { opacity: 0; }
         }
         .visually-hidden {
             position: absolute;
@@ -477,7 +465,7 @@
         }
         .camera-frame video,
         .camera-frame img {
-            object-fit: contain;
+            object-fit: cover;
             object-position: center;
         }
         .top-bar {
@@ -514,9 +502,12 @@
             bottom: 0;
             left: 0;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
             min-height: 0;
             width: 100%;
-            gap: 12px;
+            gap: 7px;
             padding: 18px 16px max(22px, env(safe-area-inset-bottom));
             background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
             touch-action: none;
@@ -569,7 +560,6 @@
             color: #fff;
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
         }
-        .filter-panel { margin-bottom: 5px; }
         @media (max-height: 560px) {
             .top-bar { padding-top: max(8px, env(safe-area-inset-top)); }
             .bottom-controls { gap: 7px; padding-top: 10px; }
@@ -604,7 +594,6 @@
                     <span class="frame-corner top-right">❧</span>
                     <span class="frame-corner bottom-left">❧</span>
                     <span class="frame-corner bottom-right">❧</span>
-                    <span id="frame-title" class="frame-title">Wedding Classic</span>
                     <div class="frame-brand">
                         <span>LY Chhun Y ♥ Loeung Sovisal</span>
                         <small>18 January 2027</small>
@@ -617,20 +606,11 @@
                 </div>
             </section>
         </main>
-        <div id="zoom-chips" class="zoom-chips" aria-label="Camera zoom" hidden></div>
-
         <footer class="bottom-controls">
             <p id="camera-status" class="status" role="status" aria-live="polite">Starting your camera…</p>
-            <section id="filter-panel" class="filter-panel" aria-label="Camera filters" hidden>
-                <p id="filter-current" class="filter-current">Original</p>
-                <div id="filter-selector" class="filter-selector">
-                    <button class="filter-option" type="button" data-filter="original" aria-pressed="true">Original</button>
-                    <button class="filter-option" type="button" data-filter="golden-romance" aria-pressed="false">Golden Romance</button>
-                    <button class="filter-option" type="button" data-filter="emerald-garden" aria-pressed="false">Emerald Garden</button>
-                    <button class="filter-option" type="button" data-filter="soft-sunset" aria-pressed="false">Soft Sunset</button>
-                    <button class="filter-option" type="button" data-filter="classic-wedding" aria-pressed="false">Classic Wedding</button>
-                </div>
-            </section>
+            <p id="style-discovery" class="style-discovery" aria-hidden="true" hidden>← Swipe to explore wedding styles →</p>
+            <p id="wedding-style-label" class="wedding-style-label" aria-live="polite" hidden>Wedding Classic</p>
+            <div id="zoom-chips" class="zoom-chips" aria-label="Camera zoom" hidden></div>
             <button id="capture-button" class="capture-button" type="button" aria-label="Capture photo" disabled>
                 <span class="visually-hidden">Capture photo</span>
             </button>
@@ -661,11 +641,9 @@
         const acceptedMessage = document.getElementById('accepted-message');
         const canvas = document.getElementById('capture-canvas');
         const zoomChips = document.getElementById('zoom-chips');
-        const filterPanel = document.getElementById('filter-panel');
-        const filterSelector = document.getElementById('filter-selector');
-        const filterCurrent = document.getElementById('filter-current');
+        const weddingStyleLabel = document.getElementById('wedding-style-label');
+        const styleDiscovery = document.getElementById('style-discovery');
         const storyFrame = document.getElementById('story-frame');
-        const frameTitle = document.getElementById('frame-title');
         const frameCorners = [...storyFrame.querySelectorAll('.frame-corner')];
 
         let stream = null;
@@ -675,8 +653,7 @@
         let acceptedPhoto = null;
         let previewUrl = null;
         let flashEnabled = false;
-        let selectedFrameIndex = 0;
-        let selectedFilter = 'original';
+        let selectedStyleIndex = 0;
         let zoomValue = 1;
         let zoomRange = { min: 1, max: 5 };
         let nativeZoomSupported = false;
@@ -687,24 +664,17 @@
         let pinchDistanceStart = 0;
         let pinchZoomStart = 1;
         let gestureWasPinch = false;
-        let filterGesturePointers = new Map();
-        let filterGestureCancelled = false;
-        let suppressFilterClick = false;
-        let filterScrollFrame = 0;
+        let styleDiscoveryShown = false;
+        let styleDiscoveryTimer = 0;
+        let zoomScrub = null;
+        let suppressZoomClick = false;
 
-        const frames = [
-            { id: 'wedding-classic', name: 'Wedding Classic', glyph: '❧', color: '#f3dda5' },
-            { id: 'khmer-luxury', name: 'Khmer Luxury', glyph: '❖', color: '#f4d378' },
-            { id: 'emerald-garden', name: 'Emerald Garden', glyph: '❧', color: '#d8e6bf' },
-            { id: 'cartoon-couple', name: 'Cartoon Couple', glyph: '♡', color: '#ffe4df' },
-            { id: 'retro-film', name: 'Retro Film', glyph: '✦', color: '#fff0cb' }
-        ];
-        const filters = [
-            { id: 'original', name: 'Original', css: 'none' },
-            { id: 'golden-romance', name: 'Golden Romance', css: 'sepia(0.2) saturate(1.2) brightness(1.04)' },
-            { id: 'emerald-garden', name: 'Emerald Garden', css: 'saturate(0.84) hue-rotate(8deg) contrast(1.04)' },
-            { id: 'soft-sunset', name: 'Soft Sunset', css: 'sepia(0.15) saturate(1.14) brightness(1.06)' },
-            { id: 'classic-wedding', name: 'Classic Wedding', css: 'saturate(0.72) contrast(1.07) brightness(1.03)' }
+        const weddingStyles = [
+            { id: 'wedding-classic', name: 'Wedding Classic', glyph: '❧', color: '#f3dda5', filter: 'saturate(0.72) contrast(1.07) brightness(1.03)', personality: 'timeless and refined' },
+            { id: 'khmer-luxury', name: 'Khmer Luxury', glyph: '❖', color: '#f4d378', filter: 'sepia(0.2) saturate(1.2) brightness(1.04)', personality: 'warm and celebratory' },
+            { id: 'emerald-garden', name: 'Emerald Garden', glyph: '❧', color: '#d8e6bf', filter: 'saturate(0.84) hue-rotate(8deg) contrast(1.04)', personality: 'fresh and botanical' },
+            { id: 'cartoon-couple', name: 'Cartoon Couple', glyph: '♡', color: '#ffe4df', filter: 'saturate(1.16) contrast(1.02) brightness(1.03)', personality: 'playful and romantic' },
+            { id: 'retro-film', name: 'Retro Film', glyph: '✦', color: '#fff0cb', filter: 'sepia(0.24) saturate(0.82) contrast(1.12)', personality: 'nostalgic and cinematic' }
         ];
         const zoomPresets = [0.5, 1, 2, 5];
 
@@ -737,15 +707,18 @@
             cameraState.hidden = false;
             loadingSpinner.hidden = true;
             retryButton.hidden = false;
+            storyFrame.hidden = true;
             stateMessage.textContent = message;
             status.textContent = message;
             captureButton.disabled = true;
             flipButton.disabled = true;
             flashButton.hidden = true;
+            setCameraControlsVisible(false);
         }
 
         function setCameraLive() {
             cameraState.hidden = true;
+            storyFrame.hidden = false;
             captureButton.disabled = false;
             flipButton.disabled = false;
             status.textContent = 'Camera ready';
@@ -821,57 +794,19 @@
             };
         }
 
-        function setFrame(index) {
-            selectedFrameIndex = (index + frames.length) % frames.length;
-            const selected = frames[selectedFrameIndex];
+        function setWeddingStyle(index) {
+            selectedStyleIndex = (index + weddingStyles.length) % weddingStyles.length;
+            const selected = weddingStyles[selectedStyleIndex];
             storyFrame.classList.add('frame-changing');
             storyFrame.dataset.frame = selected.id;
-            frameTitle.textContent = selected.name;
+            video.style.filter = selected.filter;
+            weddingStyleLabel.textContent = selected.name;
             frameCorners.forEach(corner => { corner.textContent = selected.glyph; });
             window.setTimeout(() => storyFrame.classList.remove('frame-changing'), 160);
         }
 
-        function stepFrame(direction) {
-            setFrame(selectedFrameIndex + direction);
-        }
-
-        function setFilter(filterId) {
-            const selected = filters.find(filter => filter.id === filterId);
-            if (!selected) {
-                return;
-            }
-            selectedFilter = selected.id;
-            frame.dataset.filter = selected.id;
-            filterCurrent.textContent = selected.name;
-            filterSelector.querySelectorAll('.filter-option').forEach(button => {
-                const isSelected = button.dataset.filter === selected.id;
-                button.setAttribute('aria-pressed', String(isSelected));
-                if (isSelected) {
-                    const selectorRect = filterSelector.getBoundingClientRect();
-                    const buttonRect = button.getBoundingClientRect();
-                    filterSelector.scrollTo({
-                        left: filterSelector.scrollLeft + buttonRect.left - selectorRect.left
-                            - (selectorRect.width - buttonRect.width) / 2,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        }
-
-        function updateFilterFromScroll() {
-            if (filterScrollFrame) {
-                return;
-            }
-            filterScrollFrame = requestAnimationFrame(() => {
-                filterScrollFrame = 0;
-                const center = filterSelector.getBoundingClientRect().left + filterSelector.clientWidth / 2;
-                const centeredButton = [...filterSelector.querySelectorAll('.filter-option')]
-                    .sort((a, b) => Math.abs(a.getBoundingClientRect().left + a.offsetWidth / 2 - center)
-                        - Math.abs(b.getBoundingClientRect().left + b.offsetWidth / 2 - center))[0];
-                if (centeredButton && centeredButton.dataset.filter !== selectedFilter) {
-                    setFilter(centeredButton.dataset.filter);
-                }
-            });
+        function stepWeddingStyle(direction) {
+            setWeddingStyle(selectedStyleIndex + direction);
         }
 
         function getZoomPresets() {
@@ -887,16 +822,24 @@
 
         function renderZoomChips() {
             const presets = getZoomPresets();
-            zoomChips.replaceChildren();
-            presets.forEach(value => {
-                const button = document.createElement('button');
-                button.className = 'zoom-chip';
-                button.type = 'button';
-                button.textContent = `${Number.isInteger(value) ? value : value.toFixed(1)}x`;
-                button.setAttribute('aria-label', `Set zoom to ${button.textContent}`);
+            const buttons = [...zoomChips.querySelectorAll('.zoom-chip')];
+            const needsRender = buttons.length !== presets.length
+                || buttons.some((button, index) => Number(button.dataset.zoom) !== presets[index]);
+            if (needsRender) {
+                zoomChips.replaceChildren();
+                presets.forEach(value => {
+                    const button = document.createElement('button');
+                    button.className = 'zoom-chip';
+                    button.type = 'button';
+                    button.textContent = `${Number.isInteger(value) ? value : value.toFixed(1)}x`;
+                    button.dataset.zoom = String(value);
+                    button.setAttribute('aria-label', `Set zoom to ${button.textContent}`);
+                    zoomChips.appendChild(button);
+                });
+            }
+            zoomChips.querySelectorAll('.zoom-chip').forEach((button, index) => {
+                const value = presets[index];
                 button.setAttribute('aria-pressed', String(Math.abs(value - zoomValue) < 0.03));
-                button.addEventListener('click', () => setZoom(value));
-                zoomChips.appendChild(button);
             });
             zoomChips.hidden = presets.length < 2;
         }
@@ -959,15 +902,82 @@
             });
         }
 
+        zoomChips.addEventListener('pointerdown', event => {
+            const button = event.target.closest('.zoom-chip');
+            if (!button) {
+                return;
+            }
+            const scrub = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startZoom: zoomValue,
+                scrubbing: false,
+                moved: false,
+                timer: 0
+            };
+            zoomScrub = scrub;
+            button.setPointerCapture(event.pointerId);
+            scrub.timer = window.setTimeout(() => {
+                if (zoomScrub === scrub) {
+                    scrub.scrubbing = true;
+                }
+            }, 220);
+        });
+        zoomChips.addEventListener('pointermove', event => {
+            const scrub = zoomScrub;
+            if (!scrub || scrub.pointerId !== event.pointerId || !scrub.scrubbing) {
+                return;
+            }
+            scrub.moved = scrub.moved || event.clientX !== scrub.startX;
+            setZoom(scrub.startZoom * Math.pow(2, (event.clientX - scrub.startX) / 110));
+        });
+        const finishZoomScrub = event => {
+            if (!zoomScrub || zoomScrub.pointerId !== event.pointerId) {
+                return;
+            }
+            window.clearTimeout(zoomScrub.timer);
+            if (zoomScrub.scrubbing && zoomScrub.moved) {
+                suppressZoomClick = true;
+                window.setTimeout(() => { suppressZoomClick = false; }, 0);
+            }
+            zoomScrub = null;
+        };
+        zoomChips.addEventListener('pointerup', finishZoomScrub);
+        zoomChips.addEventListener('pointercancel', finishZoomScrub);
+        zoomChips.addEventListener('click', event => {
+            const button = event.target.closest('.zoom-chip');
+            if (!button) {
+                return;
+            }
+            if (suppressZoomClick) {
+                event.preventDefault();
+                return;
+            }
+            setZoom(Number(button.dataset.zoom));
+        });
+
         function setCameraControlsVisible(visible) {
             zoomChips.hidden = !visible || zoomChips.children.length < 2;
-            filterPanel.hidden = !visible;
+            weddingStyleLabel.hidden = !visible;
+            if (!visible) {
+                window.clearTimeout(styleDiscoveryTimer);
+                styleDiscovery.hidden = true;
+                styleDiscovery.classList.remove('is-visible');
+            } else if (!styleDiscoveryShown) {
+                styleDiscoveryShown = true;
+                styleDiscovery.hidden = false;
+                styleDiscovery.classList.add('is-visible');
+                styleDiscoveryTimer = window.setTimeout(() => {
+                    styleDiscovery.hidden = true;
+                    styleDiscovery.classList.remove('is-visible');
+                }, 4600);
+            }
         }
 
         const gestureSurface = document.querySelector('.app');
         gestureSurface.addEventListener('pointerdown', event => {
             gesturePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-            if (gesturePointers.size === 1 && !event.target.closest('button, a, .filter-selector')) {
+            if (gesturePointers.size === 1 && !event.target.closest('button, a')) {
                 gestureStart = { x: event.clientX, y: event.clientY };
                 gestureWasPinch = false;
             } else if (gesturePointers.size === 2) {
@@ -996,7 +1006,7 @@
                 const deltaX = point.x - gestureStart.x;
                 const deltaY = point.y - gestureStart.y;
                 if (Math.abs(deltaX) > 52 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
-                    stepFrame(deltaX < 0 ? 1 : -1);
+                    stepWeddingStyle(deltaX < 0 ? 1 : -1);
                 }
             }
             gesturePointers.delete(event.pointerId);
@@ -1008,41 +1018,6 @@
         };
         gestureSurface.addEventListener('pointerup', finishGesture);
         gestureSurface.addEventListener('pointercancel', finishGesture);
-        filterSelector.addEventListener('pointerdown', event => {
-            filterGesturePointers.set(event.pointerId, event.clientX);
-            if (filterGesturePointers.size > 1) {
-                filterGestureCancelled = true;
-            }
-        });
-        filterSelector.addEventListener('pointerup', event => {
-            const startX = filterGesturePointers.get(event.pointerId);
-            filterGesturePointers.delete(event.pointerId);
-            if (!filterGestureCancelled && startX !== undefined) {
-                const deltaX = event.clientX - startX;
-                if (Math.abs(deltaX) > 35) {
-                    const selectedIndex = filters.findIndex(filter => filter.id === selectedFilter);
-                    const direction = deltaX < 0 ? 1 : -1;
-                    setFilter(filters[(selectedIndex + direction + filters.length) % filters.length].id);
-                    suppressFilterClick = true;
-                    window.setTimeout(() => { suppressFilterClick = false; }, 0);
-                }
-            }
-            if (filterGesturePointers.size === 0) {
-                filterGestureCancelled = false;
-            }
-        });
-        filterSelector.addEventListener('pointercancel', () => {
-            filterGesturePointers.clear();
-            filterGestureCancelled = false;
-        });
-        filterSelector.addEventListener('scroll', updateFilterFromScroll, { passive: true });
-        filterSelector.querySelectorAll('.filter-option').forEach(button => {
-            button.addEventListener('click', () => {
-                if (!suppressFilterClick) {
-                    setFilter(button.dataset.filter);
-                }
-            });
-        });
 
         async function startCamera(nextFacingMode = facingMode) {
             const currentRequest = ++requestId;
@@ -1216,7 +1191,7 @@
         }
 
         function drawStoryFrame(context, width, height) {
-            const selected = frames[selectedFrameIndex];
+            const selected = weddingStyles[selectedStyleIndex];
             const scale = Math.min(width, height);
             const inset = selected.id === 'khmer-luxury' ? scale * 0.022 : scale * 0.03;
             const color = selected.color;
@@ -1292,9 +1267,8 @@
                 const sourceHeight = video.videoHeight / zoom;
                 const sourceX = (video.videoWidth - sourceWidth) / 2;
                 const sourceY = (video.videoHeight - sourceHeight) / 2;
-                const activeFilter = filters.find(filter => filter.id === selectedFilter);
                 context.setTransform(1, 0, 0, 1, 0, 0);
-                context.filter = activeFilter?.css || 'none';
+                context.filter = weddingStyles[selectedStyleIndex].filter;
                 context.save();
                 try {
                     if (facingMode === 'user') {
@@ -1382,6 +1356,7 @@
             }
         });
 
+        setWeddingStyle(0);
         startCamera();
     </script>
 </body>
