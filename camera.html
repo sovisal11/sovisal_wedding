@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#143b2c">
+    <title>Wedding Story Booth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+            --forest: #143b2c;
+            --forest-light: #1b4c37;
+            --gold: #c8bd91;
+            --ivory: #faf9f3;
+            --muted: rgba(250, 249, 243, 0.72);
+            font-family: Inter, Arial, sans-serif;
+            background: #0b1711;
+            color: var(--ivory);
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-tap-highlight-color: transparent;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        body {
+            min-width: 280px;
+            min-height: 100vh;
+            min-height: 100svh;
+            margin: 0;
+            background:
+                radial-gradient(ellipse at 50% -15%, rgba(200, 189, 145, 0.14), transparent 55%),
+                linear-gradient(145deg, var(--forest), var(--forest-light) 52%, #102f23);
+        }
+        button, a { color: inherit; font: inherit; }
+        button { cursor: pointer; }
+        button:focus-visible, a:focus-visible {
+            outline: 3px solid var(--gold);
+            outline-offset: 3px;
+        }
+        .app {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            min-height: 100vh;
+            min-height: 100svh;
+            padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+        }
+        .top-bar {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            width: min(100%, 520px);
+            min-height: 64px;
+            margin: 0 auto;
+        }
+        .top-action {
+            display: inline-grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 1px solid rgba(250, 249, 243, 0.2);
+            border-radius: 50%;
+            background: rgba(8, 21, 14, 0.36);
+            text-decoration: none;
+            transition: background 150ms ease, opacity 150ms ease;
+        }
+        .top-action:hover:not(:disabled) { background: rgba(8, 21, 14, 0.72); }
+        .top-action:disabled { cursor: default; opacity: 0.38; }
+        .top-action svg { width: 21px; height: 21px; }
+        .close-action { justify-self: start; }
+        .top-title {
+            margin: 0;
+            color: var(--gold);
+            font-family: "Great Vibes", cursive;
+            font-size: 27px;
+            font-weight: 400;
+            white-space: nowrap;
+        }
+        .top-tools { display: flex; justify-self: end; gap: 8px; }
+        .camera-region {
+            display: grid;
+            place-items: center;
+            min-height: 0;
+            padding: 4px 0 12px;
+        }
+        .camera-frame {
+            position: relative;
+            width: min(100%, calc((100vh - 208px) * 9 / 16));
+            max-height: calc(100vh - 208px);
+            max-height: calc(100svh - 208px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            aspect-ratio: 9 / 16;
+            overflow: hidden;
+            border: 1px solid rgba(200, 189, 145, 0.65);
+            border-radius: 20px;
+            background: #050806;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.34), inset 0 0 0 4px rgba(250, 249, 243, 0.05);
+        }
+        .camera-frame video,
+        .camera-frame img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-frame video.front-camera { transform: scaleX(-1); }
+        .camera-frame img { display: none; }
+        .camera-frame.is-captured video { display: none; }
+        .camera-frame.is-captured img { display: block; }
+        .camera-state {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            align-content: center;
+            justify-items: center;
+            gap: 14px;
+            padding: 28px;
+            background: rgba(5, 12, 8, 0.84);
+            text-align: center;
+        }
+        .camera-state[hidden] { display: none; }
+        .state-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid rgba(250, 249, 243, 0.22);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 800ms linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .state-message {
+            max-width: 280px;
+            margin: 0;
+            color: var(--ivory);
+            font-size: 15px;
+            line-height: 1.55;
+        }
+        .state-retry {
+            min-height: 46px;
+            padding: 0 20px;
+            border: 1px solid var(--gold);
+            border-radius: 999px;
+            background: var(--gold);
+            color: #16271d;
+            font-weight: 600;
+        }
+        .state-retry:hover { background: #ded3a8; }
+        .bottom-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            width: min(100%, 520px);
+            min-height: 124px;
+            margin: 0 auto;
+            padding: 4px 0 max(10px, env(safe-area-inset-bottom));
+        }
+        .status {
+            min-height: 20px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .capture-button {
+            display: grid;
+            place-items: center;
+            width: 72px;
+            height: 72px;
+            flex: 0 0 auto;
+            padding: 0;
+            border: 4px solid var(--ivory);
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 0 0 3px rgba(200, 189, 145, 0.65);
+            transition: transform 120ms ease, opacity 150ms ease;
+        }
+        .capture-button::after {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: var(--ivory);
+            content: "";
+        }
+        .capture-button:active:not(:disabled) { transform: scale(0.94); }
+        .capture-button:disabled { cursor: default; opacity: 0.42; }
+        .photo-actions { display: flex; gap: 12px; }
+        .photo-actions[hidden] { display: none; }
+        .photo-action {
+            min-width: 126px;
+            min-height: 46px;
+            padding: 0 18px;
+            border: 1px solid rgba(250, 249, 243, 0.44);
+            border-radius: 999px;
+            background: rgba(8, 21, 14, 0.34);
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .photo-action:hover { background: rgba(8, 21, 14, 0.68); }
+        .photo-action.accept {
+            border-color: var(--gold);
+            background: var(--gold);
+            color: #16271d;
+        }
+        .photo-action.accept:hover { background: #ded3a8; }
+        .accepted-message {
+            margin: 0;
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .accepted-message[hidden] { display: none; }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        @media (max-height: 560px) {
+            .top-bar { min-height: 56px; }
+            .camera-frame {
+                width: min(100%, calc((100vh - 168px) * 9 / 16));
+                max-height: calc(100svh - 168px);
+            }
+            .bottom-controls { min-height: 100px; gap: 6px; }
+            .capture-button { width: 60px; height: 60px; }
+            .capture-button::after { width: 44px; height: 44px; }
+        }
+        @supports (height: 100svh) {
+            .camera-frame {
+                width: min(100%, calc((100svh - 208px) * 9 / 16));
+                max-height: calc(100svh - 208px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            }
+            @media (max-height: 560px) {
+                .camera-frame {
+                    width: min(100%, calc((100svh - 168px) * 9 / 16));
+                    max-height: calc(100svh - 168px);
+                }
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="top-bar" aria-label="Camera controls">
+            <a class="top-action close-action" href="index.html" aria-label="Close camera and return to invitation" title="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12M6 6l12 12"/></svg>
+            </a>
+            <p class="top-title">Wedding Story Booth</p>
+            <div class="top-tools">
+                <button id="flash-button" class="top-action" type="button" aria-label="Turn flash on" aria-pressed="false" title="Flash" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 10-13h-7l1-7Z"/></svg>
+                </button>
+                <button id="flip-button" class="top-action" type="button" aria-label="Switch to front camera" title="Switch camera" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-3l-2-3H9L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><circle cx="12" cy="13" r="3"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="camera-region">
+            <section id="camera-frame" class="camera-frame" aria-label="Camera preview">
+                <video id="camera-video" autoplay playsinline muted aria-label="Live camera preview"></video>
+                <img id="photo-preview" alt="Your captured wedding photo">
+                <div id="camera-state" class="camera-state" role="status" aria-live="polite">
+                    <span id="loading-spinner" class="state-spinner" aria-hidden="true"></span>
+                    <p id="state-message" class="state-message">Starting your camera…</p>
+                    <button id="retry-button" class="state-retry" type="button" hidden>Retry Camera Access</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bottom-controls">
+            <p id="camera-status" class="status" role="status" aria-live="polite">Starting your camera…</p>
+            <button id="capture-button" class="capture-button" type="button" aria-label="Capture photo" disabled>
+                <span class="visually-hidden">Capture photo</span>
+            </button>
+            <div id="photo-actions" class="photo-actions" hidden>
+                <button id="retake-button" class="photo-action" type="button">Retake</button>
+                <button id="accept-button" class="photo-action accept" type="button">Use Photo</button>
+            </div>
+            <p id="accepted-message" class="accepted-message" role="status" hidden>Photo accepted and saved temporarily in memory.</p>
+        </footer>
+    </div>
+    <canvas id="capture-canvas" class="visually-hidden" aria-hidden="true"></canvas>
+
+    <script>
+        const video = document.getElementById('camera-video');
+        const frame = document.getElementById('camera-frame');
+        const preview = document.getElementById('photo-preview');
+        const cameraState = document.getElementById('camera-state');
+        const stateMessage = document.getElementById('state-message');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const retryButton = document.getElementById('retry-button');
+        const status = document.getElementById('camera-status');
+        const captureButton = document.getElementById('capture-button');
+        const flipButton = document.getElementById('flip-button');
+        const flashButton = document.getElementById('flash-button');
+        const photoActions = document.getElementById('photo-actions');
+        const retakeButton = document.getElementById('retake-button');
+        const acceptButton = document.getElementById('accept-button');
+        const acceptedMessage = document.getElementById('accepted-message');
+        const canvas = document.getElementById('capture-canvas');
+
+        let stream = null;
+        let facingMode = 'environment';
+        let requestId = 0;
+        let capturedPhoto = null;
+        let acceptedPhoto = null;
+        let previewUrl = null;
+        let flashEnabled = false;
+
+        function stopStream(mediaStream) {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        function clearPreviewUrl() {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+                previewUrl = null;
+            }
+            preview.removeAttribute('src');
+        }
+
+        function setLoading(message) {
+            cameraState.hidden = false;
+            loadingSpinner.hidden = false;
+            retryButton.hidden = true;
+            stateMessage.textContent = message;
+            status.textContent = message;
+            captureButton.disabled = true;
+            flipButton.disabled = true;
+            flashButton.hidden = true;
+        }
+
+        function setCameraError(message) {
+            cameraState.hidden = false;
+            loadingSpinner.hidden = true;
+            retryButton.hidden = false;
+            stateMessage.textContent = message;
+            status.textContent = message;
+            captureButton.disabled = true;
+            flipButton.disabled = true;
+            flashButton.hidden = true;
+        }
+
+        function setCameraLive() {
+            cameraState.hidden = true;
+            captureButton.disabled = false;
+            flipButton.disabled = false;
+            status.textContent = 'Camera ready';
+            updateFlashSupport();
+        }
+
+        function getCameraEnvironmentError() {
+            const isLocalhost = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+            const insecureOrigin = window.location.protocol !== 'https:' && !isLocalhost;
+
+            if (window.isSecureContext === false || (window.isSecureContext === undefined && insecureOrigin)) {
+                const origin = window.location.origin;
+                return {
+                    category: 'HTTPS required',
+                    message: `HTTPS required — this page is open at ${origin}. Mobile browsers block camera access over HTTP. Serve the page over HTTPS; a Live Server LAN address is not treated as localhost.`
+                };
+            }
+
+            if (!navigator.mediaDevices) {
+                return {
+                    category: 'Browser unsupported',
+                    message: 'Browser unsupported — this browser does not provide the camera API in this context. Open the page in a current version of Safari or Chrome over HTTPS.'
+                };
+            }
+
+            if (typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                return {
+                    category: 'Browser unsupported',
+                    message: 'Browser unsupported — this browser does not implement getUserMedia. Open the page in a current version of Safari or Chrome.'
+                };
+            }
+
+            return null;
+        }
+
+        function getCameraErrorDetails(error) {
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError' || error.name === 'SecurityError') {
+                return {
+                    category: 'Permission denied',
+                    message: 'Permission denied — camera access is required to capture wedding memories. Allow camera access for this site in your browser settings, then retry.'
+                };
+            }
+            if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                return {
+                    category: 'Camera unavailable',
+                    message: 'Camera unavailable — the browser could not find a camera on this device. Check that a camera is present and available, then retry.'
+                };
+            }
+            if (error.name === 'NotReadableError' || error.name === 'TrackStartError' || error.name === 'AbortError') {
+                return {
+                    category: 'Camera unavailable',
+                    message: 'Camera unavailable — the camera could not start. Close other apps using the camera, check device access settings, then retry.'
+                };
+            }
+            if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
+                return {
+                    category: 'Camera unavailable',
+                    message: 'Camera unavailable — this device could not provide the requested camera. Check that another camera is available, then retry.'
+                };
+            }
+            if (error.name === 'NotSupportedError') {
+                return {
+                    category: 'Browser unsupported',
+                    message: 'Browser unsupported — this browser does not support the requested camera operation. Try a current version of Safari or Chrome.'
+                };
+            }
+            const reason = error.message ? ` (${error.message})` : '';
+            return {
+                category: 'Other camera error',
+                message: `Other camera error — ${error.name || 'UnknownError'}${reason}. Check the browser and device camera settings, then retry.`
+            };
+        }
+
+        async function startCamera(nextFacingMode = facingMode) {
+            const currentRequest = ++requestId;
+            const previousStream = stream;
+            const previousDeviceId = previousStream?.getVideoTracks()[0]?.getSettings().deviceId;
+            stream = null;
+            stopStream(previousStream);
+            video.srcObject = null;
+            clearPreviewUrl();
+            frame.classList.remove('is-captured');
+            photoActions.hidden = true;
+            acceptedMessage.hidden = true;
+            capturedPhoto = null;
+            acceptedPhoto = null;
+            flashEnabled = false;
+            flashButton.setAttribute('aria-pressed', 'false');
+            setLoading('Starting your camera…');
+
+            const environmentError = getCameraEnvironmentError();
+            if (environmentError) {
+                console.error(`${environmentError.category}: ${environmentError.message}`, {
+                    origin: window.location.origin,
+                    protocol: window.location.protocol,
+                    isSecureContext: window.isSecureContext,
+                    mediaDevicesAvailable: Boolean(navigator.mediaDevices),
+                    getUserMediaAvailable: typeof navigator.mediaDevices?.getUserMedia === 'function'
+                });
+                setCameraError(environmentError.message);
+                return;
+            }
+
+            let requestedStream = null;
+            try {
+                const constraints = {
+                    audio: false,
+                    video: {
+                        facingMode: { exact: nextFacingMode },
+                        width: { ideal: 1080 },
+                        height: { ideal: 1920 }
+                    }
+                };
+                try {
+                    requestedStream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (error) {
+                    if (!['OverconstrainedError', 'ConstraintNotSatisfiedError', 'NotFoundError'].includes(error.name)) {
+                        throw error;
+                    }
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                    if (!videoDevices.length) {
+                        throw error;
+                    }
+                    const wanted = nextFacingMode === 'user' ? /front|user|facetime/i : /back|rear|environment|world/i;
+                    const matchingDevice = videoDevices.find(candidate => candidate.deviceId !== previousDeviceId && wanted.test(candidate.label));
+                    const alternateDevice = videoDevices.find(candidate => candidate.deviceId !== previousDeviceId);
+                    const device = matchingDevice || (previousDeviceId ? alternateDevice : null)
+                        || (videoDevices.length === 1 ? videoDevices[0] : videoDevices[nextFacingMode === 'user' ? 0 : videoDevices.length - 1]);
+                    if (!device || (previousDeviceId && device.deviceId === previousDeviceId)) {
+                        const unavailableError = new Error('The requested camera is not available.');
+                        unavailableError.name = 'NotFoundError';
+                        throw unavailableError;
+                    }
+                    requestedStream = await navigator.mediaDevices.getUserMedia({
+                        audio: false,
+                        video: {
+                            deviceId: { exact: device.deviceId },
+                            width: { ideal: 1080 },
+                            height: { ideal: 1920 }
+                        }
+                    });
+                }
+
+                if (currentRequest !== requestId) {
+                    stopStream(requestedStream);
+                    return;
+                }
+
+                stream = requestedStream;
+                facingMode = nextFacingMode;
+                video.classList.toggle('front-camera', facingMode === 'user');
+                video.srcObject = stream;
+                await video.play();
+
+                if (currentRequest !== requestId) {
+                    stopStream(requestedStream);
+                    return;
+                }
+
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    setCameraLive();
+                } else {
+                    video.addEventListener('loadeddata', function onLoadedData() {
+                        video.removeEventListener('loadeddata', onLoadedData);
+                        if (currentRequest === requestId && stream === requestedStream) {
+                            setCameraLive();
+                        }
+                    });
+                }
+
+                requestedStream.getVideoTracks().forEach(track => {
+                    track.addEventListener('ended', () => {
+                        if (stream === requestedStream) {
+                            stream = null;
+                            setCameraError('The camera disconnected. Please try again.');
+                        }
+                    }, { once: true });
+                });
+            } catch (error) {
+                if (currentRequest !== requestId) {
+                    stopStream(requestedStream);
+                    return;
+                }
+                stream = null;
+                video.srcObject = null;
+                stopStream(requestedStream);
+                const details = getCameraErrorDetails(error);
+                console.error(`${details.category}: ${details.message}`, {
+                    errorName: error.name || 'UnknownError',
+                    errorMessage: error.message || '',
+                    origin: window.location.origin,
+                    protocol: window.location.protocol,
+                    isSecureContext: window.isSecureContext
+                });
+                setCameraError(details.message);
+            }
+        }
+
+        function updateFlashSupport() {
+            const track = stream?.getVideoTracks()[0];
+            let hasTorch = false;
+            try {
+                hasTorch = typeof track?.getCapabilities === 'function'
+                    && track.getCapabilities().torch === true
+                    && typeof track.applyConstraints === 'function';
+            } catch (error) {
+                console.warn('Could not check flash support:', error);
+            }
+            flashButton.hidden = !hasTorch;
+            flashButton.disabled = !hasTorch;
+            if (!hasTorch) {
+                flashEnabled = false;
+                flashButton.setAttribute('aria-pressed', 'false');
+            }
+        }
+
+        async function toggleFlash() {
+            const track = stream?.getVideoTracks()[0];
+            if (!track || flashButton.hidden) {
+                return;
+            }
+
+            const nextEnabled = !flashEnabled;
+            flashButton.disabled = true;
+            try {
+                await track.applyConstraints({ advanced: [{ torch: nextEnabled }] });
+                flashEnabled = nextEnabled;
+                flashButton.setAttribute('aria-pressed', String(flashEnabled));
+                flashButton.setAttribute('aria-label', flashEnabled ? 'Turn flash off' : 'Turn flash on');
+            } catch (error) {
+                console.warn('Flash is unavailable:', error);
+                flashButton.hidden = true;
+                flashEnabled = false;
+                flashButton.setAttribute('aria-pressed', 'false');
+            } finally {
+                if (!flashButton.hidden && stream) {
+                    flashButton.disabled = false;
+                }
+            }
+        }
+
+        async function capturePhoto() {
+            if (!stream || !video.videoWidth || !video.videoHeight || captureButton.disabled) {
+                return;
+            }
+
+            captureButton.disabled = true;
+            status.textContent = 'Capturing photo…';
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            if (!context) {
+                status.textContent = 'Could not capture the photo. Please try again.';
+                captureButton.disabled = false;
+                return;
+            }
+
+            try {
+                context.setTransform(1, 0, 0, 1, 0, 0);
+                if (facingMode === 'user') {
+                    context.translate(canvas.width, 0);
+                    context.scale(-1, 1);
+                }
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        status.textContent = 'Could not capture the photo. Please try again.';
+                        captureButton.disabled = false;
+                        return;
+                    }
+                    capturedPhoto = blob;
+                    previewUrl = URL.createObjectURL(blob);
+                    preview.src = previewUrl;
+                    frame.classList.add('is-captured');
+                    cameraState.hidden = true;
+                    photoActions.hidden = false;
+                    acceptedMessage.hidden = true;
+                    status.textContent = 'Photo captured. Retake it or use this photo.';
+                }, 'image/jpeg', 0.92);
+            } catch (error) {
+                console.error('Photo capture failed:', error);
+                status.textContent = 'Could not capture the photo. Please try again.';
+                captureButton.disabled = false;
+            }
+        }
+
+        function retakePhoto() {
+            if (!stream || !capturedPhoto) {
+                return;
+            }
+            clearPreviewUrl();
+            frame.classList.remove('is-captured');
+            photoActions.hidden = true;
+            acceptedMessage.hidden = true;
+            capturedPhoto = null;
+            acceptedPhoto = null;
+            status.textContent = 'Camera ready';
+            captureButton.disabled = false;
+        }
+
+        function acceptPhoto() {
+            if (!capturedPhoto) {
+                return;
+            }
+            acceptedPhoto = capturedPhoto;
+            photoActions.hidden = true;
+            acceptedMessage.hidden = false;
+            status.textContent = 'Photo accepted';
+        }
+
+        captureButton.addEventListener('click', capturePhoto);
+        retryButton.addEventListener('click', () => startCamera(facingMode));
+        flipButton.addEventListener('click', () => {
+            const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
+            startCamera(nextFacingMode);
+            flipButton.setAttribute('aria-label', nextFacingMode === 'user' ? 'Switch to rear camera' : 'Switch to front camera');
+        });
+        flashButton.addEventListener('click', toggleFlash);
+        retakeButton.addEventListener('click', retakePhoto);
+        acceptButton.addEventListener('click', acceptPhoto);
+        window.addEventListener('pagehide', () => {
+            requestId++;
+            stopStream(stream);
+            stream = null;
+            clearPreviewUrl();
+            capturedPhoto = null;
+            acceptedPhoto = null;
+        });
+        window.addEventListener('pageshow', event => {
+            if (event.persisted && !stream) {
+                startCamera(facingMode);
+            }
+        });
+
+        startCamera();
+    </script>
+</body>
+</html>

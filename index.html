@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        champagne: {
+                            50: '#FAF9F3',
+                            100: '#F1EFE3',
+                            200: '#DEDCCB',
+                            300: '#C8BD91',
+                            400: '#71866F',
+                            500: '#286047',
+                            600: '#174431',
+                        },
+                        blush: {
+                            50: '#F9F6EC',
+                            100: '#F0EAD8',
+                            200: '#DCCFA9',
+                            300: '#C2AD75',
+                            400: '#A58D54',
+                        },
+                        rosewood: '#292F2A'
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'Georgia', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        cursive: ['Great Vibes', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .font-cursive { font-family: 'Great Vibes', cursive; }
+        .font-serif { font-family: 'Playfair Display', Georgia, serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        :root {
+            color-scheme: light;
+            --emerald: #286047;
+            --forest: #174431;
+            --sage: #71866F;
+            --gold: #A58D54;
+            --ivory: #FAF9F3;
+            --cream: #F1EFE3;
+            --charcoal: #292F2A;
+        }
+        body {
+            background-color: var(--ivory);
+            color: var(--charcoal);
+            background-image: radial-gradient(ellipse at 50% 8%, rgba(200, 189, 145, 0.09), transparent 48%);
+        }
+        nav {
+            box-shadow: 0 8px 28px rgba(23, 68, 49, 0.06);
+        }
+        #hero {
+            isolation: isolate;
+        }
+        #hero::before,
+        #hero::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+        }
+        #hero::before {
+            inset: 1.15rem;
+            border: 1px solid rgba(165, 141, 84, 0.22);
+            border-radius: 2px;
+        }
+        #hero::after {
+            inset: 1.15rem;
+            opacity: 0.52;
+            background:
+                linear-gradient(var(--gold), var(--gold)) left top / 2.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left top / 1px 2.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 2.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 1px 2.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 2.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 1px 2.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 2.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 1px 2.25rem no-repeat;
+        }
+        #hero > div {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        #bride-hosts,
+        #groom-hosts {
+            color: var(--forest);
+            letter-spacing: 0.025em;
+        }
+        #couple-names {
+            letter-spacing: -0.035em;
+            text-shadow: 0 2px 24px rgba(23, 68, 49, 0.08);
+        }
+        #couple-names + p {
+            letter-spacing: 0.045em;
+        }
+        #countdown {
+            background: linear-gradient(135deg, #F5F3E9 0%, #FBFAF5 52%, #F1EFE3 100%);
+        }
+        #countdown .grid > div {
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 12px 30px rgba(23, 68, 49, 0.055);
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        }
+        #countdown .grid > div:hover {
+            transform: translateY(-3px);
+            border-color: rgba(165, 141, 84, 0.55);
+            box-shadow: 0 16px 34px rgba(23, 68, 49, 0.1);
+        }
+        #timeline {
+            background: linear-gradient(180deg, var(--ivory), #F6F4EB 100%);
+        }
+        #timeline .timeline-card,
+        #schedule .max-w-3xl > div {
+            background: rgba(255, 255, 255, 0.82);
+            border-color: rgba(165, 141, 84, 0.28);
+            box-shadow: 0 18px 42px rgba(23, 68, 49, 0.075);
+        }
+        #timeline .timeline-card {
+            border-radius: 1rem;
+        }
+        #schedule {
+            background:
+                radial-gradient(ellipse at 50% 10%, rgba(200, 189, 145, 0.12), transparent 58%),
+                var(--ivory);
+        }
+        #schedule .max-w-3xl > div {
+            position: relative;
+            border-radius: 1.5rem;
+            outline: 1px solid rgba(165, 141, 84, 0.12);
+            outline-offset: 5px;
+        }
+        #wishes {
+            background: linear-gradient(180deg, #F6F4EB, #FBFAF5);
+        }
+        #wishes-container > *,
+        #wish-form-panel {
+            border-color: rgba(165, 141, 84, 0.28);
+            box-shadow: 0 12px 32px rgba(23, 68, 49, 0.055);
+        }
+        #wish-form-panel {
+            background: rgba(255, 255, 255, 0.72);
+        }
+        footer {
+            background: linear-gradient(180deg, #F1EFE3, #E9E8D9);
+            border-color: rgba(165, 141, 84, 0.35);
+        }
+        #countdown-heading,
+        #timeline-heading,
+        #venue-heading,
+        #guestbook-heading {
+            letter-spacing: -0.025em;
+        }
+        #countdown-heading::after,
+        #timeline-heading::after,
+        #venue-heading::after,
+        #guestbook-heading::after {
+            content: "";
+            display: block;
+            width: 3rem;
+            height: 1px;
+            margin: 0.85rem auto 0;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        body {
+            background-color: var(--forest);
+            background-image:
+                radial-gradient(ellipse at 50% 0%, rgba(165, 141, 84, 0.12), transparent 42%),
+                linear-gradient(145deg, #143b2c, #1b4c37 48%, #123526);
+        }
+        #hero {
+            min-height: 100vh;
+            padding: 7rem 1rem 3rem;
+            background:
+                radial-gradient(ellipse at 50% 38%, rgba(200, 189, 145, 0.14), transparent 56%),
+                linear-gradient(135deg, #143b2c, #1b4c37 52%, #123526);
+        }
+        #hero::before {
+            inset: 1.1rem;
+            border-color: rgba(213, 190, 124, 0.42);
+        }
+        #hero::after {
+            inset: 1.1rem;
+            opacity: 0.82;
+            background:
+                linear-gradient(var(--gold), var(--gold)) left top / 3.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left top / 1px 3.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 3.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 1px 3.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 3.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 1px 3.25rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 3.25rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 1px 3.25rem no-repeat;
+        }
+        #hero > div {
+            position: relative;
+            width: min(100%, 70rem);
+            max-width: 70rem;
+            padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 4.5rem);
+            border: 1px solid rgba(165, 141, 84, 0.72);
+            outline: 1px solid rgba(250, 249, 243, 0.5);
+            outline-offset: 7px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.55), transparent 34%),
+                repeating-linear-gradient(135deg, rgba(165, 141, 84, 0.025) 0 1px, transparent 1px 7px),
+                linear-gradient(145deg, #fbfaf5, #f1efe3 62%, #f8f6ed);
+            box-shadow:
+                0 35px 90px rgba(5, 25, 17, 0.34),
+                0 12px 28px rgba(5, 25, 17, 0.16),
+                inset 0 0 0 7px rgba(255, 255, 255, 0.58),
+                inset 0 0 0 8px rgba(165, 141, 84, 0.22);
+        }
+        #hero > div::before,
+        #hero > div::after {
+            content: "";
+            position: absolute;
+            pointer-events: none;
+        }
+        #hero > div::before {
+            inset: 1rem;
+            border: 1px solid rgba(165, 141, 84, 0.26);
+        }
+        #hero > div::after {
+            inset: 1rem;
+            opacity: 0.6;
+            background:
+                linear-gradient(var(--gold), var(--gold)) left top / 1.6rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left top / 1px 1.6rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 1.6rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right top / 1px 1.6rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 1.6rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) left bottom / 1px 1.6rem no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 1.6rem 1px no-repeat,
+                linear-gradient(var(--gold), var(--gold)) right bottom / 1px 1.6rem no-repeat;
+        }
+        #hero > div > * {
+            position: relative;
+            z-index: 1;
+        }
+        #bride-hosts,
+        #groom-hosts {
+            padding: 0.9rem 1rem;
+            border-top: 1px solid rgba(165, 141, 84, 0.34);
+            border-bottom: 1px solid rgba(165, 141, 84, 0.34);
+        }
+        #bride-hosts p,
+        #groom-hosts p {
+            font-size: clamp(0.92rem, 1.8vw, 1.2rem);
+            letter-spacing: 0.045em;
+        }
+        #guest-greeting {
+            color: #8b7440;
+            font-size: clamp(1.05rem, 2vw, 1.35rem);
+            letter-spacing: 0.035em;
+        }
+        #guest-greeting::after {
+            content: "";
+            display: block;
+            width: 2.5rem;
+            height: 1px;
+            margin: 0.85rem auto 0;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        #couple-names {
+            margin-top: 0.25rem;
+            margin-bottom: 1.5rem;
+            color: #174431;
+            font-size: clamp(2.15rem, 6.2vw, 5.2rem);
+            letter-spacing: -0.045em;
+            line-height: 1.12;
+            text-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.9),
+                0 2px 0 rgba(165, 141, 84, 0.24),
+                0 12px 28px rgba(23, 68, 49, 0.12);
+        }
+        #couple-names > span {
+            white-space: nowrap;
+        }
+        #couple-names > span[aria-hidden="true"] {
+            color: var(--gold);
+            font-size: 0.55em;
+        }
+        #hero > div > div:has(> .rounded-t-full) {
+            padding: 0.65rem;
+            border: 1px solid rgba(165, 141, 84, 0.72);
+            background: linear-gradient(145deg, #fffdf7, #e8e4d4);
+            box-shadow:
+                0 20px 45px rgba(23, 68, 49, 0.22),
+                inset 0 0 0 4px rgba(255, 255, 255, 0.82);
+        }
+        #hero > div > div:has(> .rounded-t-full) > div:first-child {
+            outline: 1px solid rgba(165, 141, 84, 0.45);
+            outline-offset: 3px;
+        }
+        #hero > div > div:has(> .rounded-t-full) img {
+            transition: transform 700ms ease;
+        }
+        #hero > div > div:last-child a {
+            background: linear-gradient(135deg, #286047, #174431);
+            border: 1px solid rgba(165, 141, 84, 0.7);
+            box-shadow: 0 8px 20px rgba(23, 68, 49, 0.16);
+            letter-spacing: 0.045em;
+        }
+        #hero > div > div:last-child button {
+            border-color: rgba(165, 141, 84, 0.58);
+            background: rgba(255, 255, 255, 0.3);
+            letter-spacing: 0.045em;
+        }
+        #countdown,
+        #timeline,
+        #schedule,
+        #wishes {
+            position: relative;
+            padding-top: clamp(4rem, 8vw, 7rem);
+            padding-bottom: clamp(4rem, 8vw, 7rem);
+            border-color: rgba(200, 189, 145, 0.38);
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(200, 189, 145, 0.15), transparent 56%),
+                linear-gradient(145deg, #143b2c, #1b4c37 52%, #123526);
+        }
+        #countdown > .max-w-4xl,
+        #timeline > .max-w-4xl,
+        #schedule > .max-w-5xl,
+        #wishes > .max-w-5xl {
+            position: relative;
+            padding: clamp(2.25rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+            border: 1px solid rgba(165, 141, 84, 0.74);
+            outline: 1px solid rgba(250, 249, 243, 0.46);
+            outline-offset: 6px;
+            background:
+                repeating-linear-gradient(135deg, rgba(165, 141, 84, 0.022) 0 1px, transparent 1px 8px),
+                linear-gradient(145deg, #fbfaf5, #f1efe3 72%, #f8f6ed);
+            box-shadow:
+                0 28px 65px rgba(5, 25, 17, 0.3),
+                inset 0 0 0 6px rgba(255, 255, 255, 0.62),
+                inset 0 0 0 7px rgba(165, 141, 84, 0.18);
+        }
+        #countdown > .max-w-4xl::before,
+        #timeline > .max-w-4xl::before,
+        #schedule > .max-w-5xl::before,
+        #wishes > .max-w-5xl::before {
+            content: "";
+            position: absolute;
+            inset: 0.8rem;
+            border: 1px solid rgba(165, 141, 84, 0.22);
+            pointer-events: none;
+        }
+        #countdown > .max-w-4xl > *,
+        #timeline > .max-w-4xl > *,
+        #schedule > .max-w-5xl > *,
+        #wishes > .max-w-5xl > * {
+            position: relative;
+            z-index: 1;
+        }
+        #countdown .grid > div {
+            border-color: rgba(200, 189, 145, 0.62);
+            background: linear-gradient(155deg, #286047, #174431);
+            box-shadow:
+                0 12px 25px rgba(23, 68, 49, 0.18),
+                inset 0 0 0 3px rgba(255, 255, 255, 0.07);
+        }
+        #countdown .grid > div span:first-child {
+            color: #fbfaf5;
+            text-shadow: 0 2px 14px rgba(5, 25, 17, 0.25);
+        }
+        #countdown .grid > div span:last-child {
+            color: #dfcf9f;
+        }
+        #timeline > .max-w-4xl {
+            max-width: 62rem;
+        }
+        #timeline .timeline-card {
+            position: relative;
+            border-color: rgba(165, 141, 84, 0.44);
+            background: linear-gradient(145deg, #fffdf8, #f3f0e5);
+            box-shadow:
+                0 12px 30px rgba(23, 68, 49, 0.1),
+                inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+        }
+        #timeline .timeline-card:hover,
+        #timeline .timeline-card:focus-within {
+            box-shadow: 0 18px 36px rgba(23, 68, 49, 0.17);
+        }
+        #timeline .timeline-card summary {
+            border-bottom: 1px solid transparent;
+        }
+        #timeline .timeline-card[open] summary {
+            border-color: rgba(165, 141, 84, 0.25);
+        }
+        #timeline > .max-w-4xl > div > .relative > div[aria-hidden="true"] {
+            background: linear-gradient(180deg, rgba(165, 141, 84, 0.3), var(--gold), rgba(165, 141, 84, 0.3));
+        }
+        #timeline .timeline-item > div[aria-hidden="true"] {
+            background: linear-gradient(145deg, #d8c78c, #9f8648);
+            box-shadow: 0 0 0 4px #f4f0e4, 0 0 0 5px rgba(165, 141, 84, 0.36);
+        }
+        #schedule .max-w-3xl > div {
+            background:
+                repeating-linear-gradient(135deg, rgba(165, 141, 84, 0.025) 0 1px, transparent 1px 8px),
+                linear-gradient(145deg, #fffdf8, #f1efe3);
+            box-shadow:
+                0 20px 48px rgba(23, 68, 49, 0.12),
+                inset 0 0 0 5px rgba(255, 255, 255, 0.72);
+        }
+        #schedule .max-w-3xl > div::before {
+            content: "";
+            position: absolute;
+            inset: 0.75rem;
+            border: 1px solid rgba(165, 141, 84, 0.24);
+            pointer-events: none;
+        }
+        #schedule .max-w-3xl > div > * {
+            position: relative;
+            z-index: 1;
+        }
+        #schedule [data-wedding-map] {
+            background: linear-gradient(145deg, #286047, #174431);
+            border-color: rgba(165, 141, 84, 0.72);
+            color: #fbfaf5;
+            box-shadow: 0 8px 20px rgba(23, 68, 49, 0.15);
+        }
+        #schedule [data-wedding-map] i {
+            color: #dfcf9f;
+        }
+        #wishes #wish-form-panel {
+            background: linear-gradient(145deg, #f8f6ed, #ebe9da);
+            border-color: rgba(165, 141, 84, 0.46);
+            box-shadow: 0 18px 38px rgba(23, 68, 49, 0.11);
+        }
+        #wishes-container > * {
+            background: linear-gradient(145deg, #fffdf8, #f2efe4);
+            border-color: rgba(165, 141, 84, 0.38);
+            box-shadow: 0 10px 26px rgba(23, 68, 49, 0.09);
+        }
+        #wishes input,
+        #wishes textarea {
+            background-color: rgba(255, 255, 255, 0.82);
+            border-color: rgba(165, 141, 84, 0.38);
+        }
+        #wish-form button[type="submit"] {
+            background: linear-gradient(135deg, #286047, #174431);
+            border: 1px solid rgba(165, 141, 84, 0.68);
+            color: #fbfaf5;
+        }
+        footer {
+            position: relative;
+            padding-top: 3.5rem;
+            padding-bottom: 3.5rem;
+            border-color: rgba(200, 189, 145, 0.38);
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(200, 189, 145, 0.12), transparent 65%),
+                linear-gradient(145deg, #143b2c, #102f23);
+            color: rgba(250, 249, 243, 0.78);
+        }
+        footer #footer-couple-names {
+            color: #dfcf9f;
+            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.22);
+        }
+        footer .text-rosewood\/50 {
+            color: rgba(250, 249, 243, 0.52);
+        }
+        a, button, summary {
+            -webkit-tap-highlight-color: transparent;
+        }
+        section[id] { scroll-margin-top: 5rem; }
+        @media (max-width: 767px) {
+            section[id] { scroll-margin-top: 5rem; }
+            nav .mobile-section-links { display: none; }
+            #hero {
+                padding: 6.25rem 0.75rem 2rem;
+            }
+            #hero::before,
+            #hero::after {
+                inset: 0.55rem;
+            }
+            #hero > div {
+                padding: 2.5rem 1.15rem;
+            }
+            #hero > div::before,
+            #hero > div::after {
+                inset: 0.65rem;
+            }
+            #bride-hosts,
+            #groom-hosts {
+                padding: 0.65rem 0.25rem;
+            }
+            #bride-hosts p,
+            #groom-hosts p {
+                font-size: clamp(0.76rem, 3.4vw, 0.9rem);
+                letter-spacing: 0;
+            }
+            #couple-names {
+                font-size: clamp(1.9rem, 9vw, 3rem);
+            }
+            #countdown > .max-w-4xl,
+            #timeline > .max-w-4xl,
+            #schedule > .max-w-5xl,
+            #wishes > .max-w-5xl {
+                padding: 2.5rem 1.1rem;
+            }
+            #countdown > .max-w-4xl::before,
+            #timeline > .max-w-4xl::before,
+            #schedule > .max-w-5xl::before,
+            #wishes > .max-w-5xl::before {
+                inset: 0.55rem;
+            }
+        }
+        
+        .timeline-item {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1);
+        }
+        .timeline-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .timeline-card {
+            transition: transform 250ms ease, box-shadow 250ms ease;
+        }
+        .timeline-card:hover,
+        .timeline-card:focus-within {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 35px rgba(74, 46, 43, 0.12);
+        }
+        :focus-visible {
+            outline: 3px solid var(--gold);
+            outline-offset: 3px;
+        }
+        .skip-link {
+            position: fixed;
+            top: 0.5rem;
+            left: 0.5rem;
+            z-index: 60;
+            transform: translateY(-150%);
+        }
+        .skip-link:focus {
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .timeline-item {
+                opacity: 1;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-champagne-50 text-rosewood font-sans antialiased selection:bg-blush-200">
+
+    <a href="#main-content" class="skip-link rounded-lg bg-white px-4 py-3 text-rosewood shadow-lg">Skip to content</a>
+
+    <!-- Sticky Navigation -->
+    <nav aria-label="Main navigation" class="fixed top-0 left-0 right-0 z-40 bg-champagne-50/90 backdrop-blur-md border-b border-champagne-200/60 transition-all">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-y-2">
+            <a id="couple-monogram" href="#hero" aria-label="Back to the wedding invitation" class="font-cursive text-3xl md:text-4xl text-champagne-600 hover:opacity-80 transition"></a>
+            <div role="group" aria-label="Section links" class="mobile-section-links order-3 w-full flex flex-wrap items-center gap-x-0.5 text-xs font-medium tracking-normal md:order-none md:w-auto md:flex-nowrap md:gap-x-8 md:text-sm md:tracking-wide">
+                <a href="#hero" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Home</a>
+                <a href="#countdown" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Countdown</a>
+                <a href="#timeline" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Timeline</a>
+                <a href="#schedule" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Venue</a>
+                <a href="#wishes" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Guestbook</a>
+            </div>
+            <a href="camera.html" class="flex min-h-11 items-center gap-2 bg-rosewood text-champagne-50 hover:bg-champagne-600 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition shadow-md hover:shadow-lg transform active:scale-95">
+                <i data-lucide="camera" class="w-4 h-4" aria-hidden="true"></i>
+                <span>Guest Camera</span>
+            </a>
+        </div>
+    </nav>
+
+    <main id="main-content" tabindex="-1">
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen pt-24 pb-12 flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-champagne-100/50 via-champagne-50 to-champagne-50">
+        <div class="max-w-5xl mx-auto px-4 text-center z-10 flex flex-col items-center">
+            <div class="grid grid-cols-2 gap-5 sm:gap-16 w-full max-w-3xl mb-10">
+                <div id="bride-hosts" role="group" aria-label="Parents of the bride" class="space-y-1 text-center"></div>
+                <div id="groom-hosts" role="group" aria-label="Parents of the groom" class="space-y-1 text-center"></div>
+            </div>
+
+            <div class="mb-5">
+                <p id="guest-greeting" class="font-serif text-lg sm:text-xl text-champagne-600 tracking-wide"></p>
+                <p id="guest-load-status" class="hidden mt-2 text-xs text-rosewood/70" role="status"></p>
+            </div>
+
+            <div class="font-serif text-base sm:text-lg md:text-xl italic text-rosewood/80 leading-relaxed mb-7">
+                <p>Together with their families</p>
+                <p class="my-1">request the pleasure of your company</p>
+                <p>at the celebration of their marriage</p>
+            </div>
+
+            <h1 id="couple-names" class="flex flex-col sm:flex-row items-center justify-center gap-x-5 font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-rosewood mb-6 tracking-tight">
+                <span id="bride-name"></span>
+                <span aria-hidden="true" class="text-champagne-500 text-3xl sm:text-4xl">&amp;</span>
+                <span id="groom-name"></span>
+            </h1>
+
+            <p class="text-base md:text-lg font-serif italic text-champagne-600 mb-8">
+                <span>Save the Date • </span><span data-wedding-date></span><br>
+                <span data-wedding-location></span>
+            </p>
+
+            <!-- Couple Photo Frame -->
+            <div class="relative w-48 h-60 sm:w-56 sm:h-72 mb-8 rounded-t-full p-3 bg-white shadow-xl ring-1 ring-champagne-200 group">
+                <div class="w-full h-full rounded-t-full overflow-hidden relative">
+                    <img id="couple-photo" src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&q=80&w=800" 
+                         alt="" 
+                         class="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-out"
+                         onerror="this.onerror=null; this.src='https://placehold.co/800x1000/E7E3D1/174431?text=Wedding+Photo'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-rosewood/20 via-transparent to-transparent"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="#schedule" class="px-8 py-3 bg-champagne-600 hover:bg-champagne-500 text-white rounded-full font-medium transition shadow-md text-center">
+                    Event Details
+                </a>
+                <a href="camera.html" class="min-h-11 px-8 py-3 border border-rosewood/30 hover:border-rosewood text-rosewood rounded-full font-medium transition flex items-center justify-center gap-2">
+                    <i data-lucide="camera" class="w-4 h-4" aria-hidden="true"></i> Open Guest Camera
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Countdown Section -->
+    <section id="countdown" aria-labelledby="countdown-heading" class="py-16 bg-white border-y border-champagne-200/50">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 id="countdown-heading" class="font-serif text-2xl md:text-3xl text-rosewood mb-2">Counting Down To Our Forever</h2>
+            <p class="text-sm text-champagne-600 mb-8 uppercase tracking-widest"><span data-wedding-date></span> • <span data-wedding-location></span></p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-2xl mx-auto" aria-label="Wedding countdown" aria-live="off">
+                <div class="p-4 sm:p-6 bg-champagne-50 rounded-2xl border border-champagne-200/60 shadow-sm">
+                    <span id="count-days" class="font-serif text-3xl sm:text-5xl font-semibold text-rosewood block">00</span>
+                    <span class="text-xs uppercase tracking-wider text-champagne-600 mt-1 block">Days</span>
+                </div>
+                <div class="p-4 sm:p-6 bg-champagne-50 rounded-2xl border border-champagne-200/60 shadow-sm">
+                    <span id="count-hours" class="font-serif text-3xl sm:text-5xl font-semibold text-rosewood block">00</span>
+                    <span class="text-xs uppercase tracking-wider text-champagne-600 mt-1 block">Hours</span>
+                </div>
+                <div class="p-4 sm:p-6 bg-champagne-50 rounded-2xl border border-champagne-200/60 shadow-sm">
+                    <span id="count-mins" class="font-serif text-3xl sm:text-5xl font-semibold text-rosewood block">00</span>
+                    <span class="text-xs uppercase tracking-wider text-champagne-600 mt-1 block">Minutes</span>
+                </div>
+                <div class="p-4 sm:p-6 bg-champagne-50 rounded-2xl border border-champagne-200/60 shadow-sm">
+                    <span id="count-secs" class="font-serif text-3xl sm:text-5xl font-semibold text-rosewood block">00</span>
+                    <span class="text-xs uppercase tracking-wider text-champagne-600 mt-1 block">Seconds</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scroll-Revealed Event Timeline -->
+    <section id="timeline" aria-labelledby="timeline-heading" class="py-20 bg-gradient-to-b from-champagne-50 to-white overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-14">
+                <span class="text-xs uppercase tracking-widest text-champagne-600 font-semibold">The Day at a Glance</span>
+                <h2 id="timeline-heading" class="font-serif text-4xl text-rosewood mt-1">Our Wedding Timeline</h2>
+                <p class="text-sm text-rosewood/70 mt-3 max-w-lg mx-auto">
+                    A few lovely moments are taking shape. Open each card for details; times and notes marked TBA are placeholders for now.
+                </p>
+            </div>
+
+            <div class="relative max-w-2xl mx-auto">
+                <div class="absolute left-5 sm:left-1/2 top-2 bottom-2 w-px bg-champagne-300 sm:-translate-x-1/2" aria-hidden="true"></div>
+                <div class="space-y-8 sm:space-y-10">
+                    <article class="timeline-item relative sm:grid sm:grid-cols-2 sm:gap-10 items-start">
+                        <div class="absolute left-5 sm:left-1/2 top-6 z-10 w-3 h-3 rounded-full bg-champagne-500 ring-4 ring-white sm:-translate-x-1/2" aria-hidden="true"></div>
+                        <div class="pl-12 sm:pl-0 sm:pr-2 sm:text-right">
+                            <details class="timeline-card group bg-white rounded-2xl border border-champagne-200/80 shadow-sm overflow-hidden">
+                                <summary class="list-none cursor-pointer p-5 sm:p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-600">
+                                    <div class="flex sm:flex-row-reverse items-center sm:justify-end gap-3 text-champagne-600 mb-2">
+                                        <span id="timeline-welcome-time" class="text-[11px] font-semibold uppercase tracking-widest"></span>
+                                    </div>
+                                    <h3 class="font-serif text-xl text-rosewood">A warm welcome</h3>
+                                    <p class="text-sm text-rosewood/65 mt-1">Guest arrival and welcome.</p>
+                                    <span class="inline-block text-[11px] text-champagne-600 mt-3 group-open:hidden">Tap for details +</span>
+                                    <span class="hidden text-[11px] text-champagne-600 mt-3 group-open:inline-block">Hide details −</span>
+                                </summary>
+                                <p class="px-5 pb-5 sm:px-6 sm:pb-6 text-sm leading-relaxed text-rosewood/70">Guest arrival details will be announced.</p>
+                            </details>
+                        </div>
+                    </article>
+
+                    <article class="timeline-item relative sm:grid sm:grid-cols-2 sm:gap-10 items-start">
+                        <div class="absolute left-5 sm:left-1/2 top-6 z-10 w-3 h-3 rounded-full bg-blush-400 ring-4 ring-white sm:-translate-x-1/2" aria-hidden="true"></div>
+                        <div class="pl-12 sm:pl-0 sm:col-start-2 sm:pl-2">
+                            <details class="timeline-card group bg-white rounded-2xl border border-champagne-200/80 shadow-sm overflow-hidden">
+                                <summary class="list-none cursor-pointer p-5 sm:p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-600">
+                                    <div class="flex items-center gap-3 text-champagne-600 mb-2">
+                                        <span id="timeline-ceremony-time" class="text-[11px] font-semibold uppercase tracking-widest"></span>
+                                    </div>
+                                    <h3 class="font-serif text-xl text-rosewood">The ceremony</h3>
+                                    <span class="inline-block text-[11px] text-champagne-600 mt-3 group-open:hidden">Tap for details +</span>
+                                    <span class="hidden text-[11px] text-champagne-600 mt-3 group-open:inline-block">Hide details −</span>
+                                </summary>
+                                <p class="px-5 pb-5 sm:px-6 sm:pb-6 text-sm leading-relaxed text-rosewood/70">Ceremony details will be announced.</p>
+                            </details>
+                        </div>
+                    </article>
+
+                    <article class="timeline-item relative sm:grid sm:grid-cols-2 sm:gap-10 items-start">
+                        <div class="absolute left-5 sm:left-1/2 top-6 z-10 w-3 h-3 rounded-full bg-champagne-500 ring-4 ring-white sm:-translate-x-1/2" aria-hidden="true"></div>
+                        <div class="pl-12 sm:pl-0 sm:pr-2 sm:text-right">
+                            <details class="timeline-card group bg-white rounded-2xl border border-champagne-200/80 shadow-sm overflow-hidden">
+                                <summary class="list-none cursor-pointer p-5 sm:p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-600">
+                                    <div class="flex sm:flex-row-reverse items-center sm:justify-end gap-3 text-champagne-600 mb-2">
+                                        <i data-lucide="camera" class="w-5 h-5 shrink-0" aria-hidden="true"></i>
+                                        <span class="text-[11px] font-semibold uppercase tracking-widest">To be announced</span>
+                                    </div>
+                                    <h3 class="font-serif text-xl text-rosewood">Cocktail hour</h3>
+                                    <p class="text-sm text-rosewood/65 mt-1">Reception details to be announced</p>
+                                    <span class="inline-block text-[11px] text-champagne-600 mt-3 group-open:hidden">Tap for details +</span>
+                                    <span class="hidden text-[11px] text-champagne-600 mt-3 group-open:inline-block">Hide details −</span>
+                                </summary>
+                                <p class="px-5 pb-5 sm:px-6 sm:pb-6 text-sm leading-relaxed text-rosewood/70">Reception schedule and venue details will be announced.</p>
+                            </details>
+                        </div>
+                    </article>
+
+                    <article class="timeline-item relative sm:grid sm:grid-cols-2 sm:gap-10 items-start">
+                        <div class="absolute left-5 sm:left-1/2 top-6 z-10 w-3 h-3 rounded-full bg-blush-400 ring-4 ring-white sm:-translate-x-1/2" aria-hidden="true"></div>
+                        <div class="pl-12 sm:pl-0 sm:col-start-2 sm:pl-2">
+                            <details class="timeline-card group bg-white rounded-2xl border border-champagne-200/80 shadow-sm overflow-hidden">
+                                <summary class="list-none cursor-pointer p-5 sm:p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-600">
+                                    <div class="flex items-center gap-3 text-champagne-600 mb-2">
+                                        <i data-lucide="music-2" class="w-5 h-5 shrink-0" aria-hidden="true"></i>
+                                        <span class="text-[11px] font-semibold uppercase tracking-widest">To be announced</span>
+                                    </div>
+                                    <h3 class="font-serif text-xl text-rosewood">Dinner & dancing</h3>
+                                    <p class="text-sm text-rosewood/65 mt-1">Celebration details to be announced</p>
+                                    <span class="inline-block text-[11px] text-champagne-600 mt-3 group-open:hidden">Tap for details +</span>
+                                    <span class="hidden text-[11px] text-champagne-600 mt-3 group-open:inline-block">Hide details −</span>
+                                </summary>
+                                <p class="px-5 pb-5 sm:px-6 sm:pb-6 text-sm leading-relaxed text-rosewood/70">Celebration details will be announced.</p>
+                            </details>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Venue Details -->
+    <section id="schedule" aria-labelledby="venue-heading" class="py-20 bg-champagne-50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <span class="text-xs uppercase tracking-widest text-champagne-600 font-semibold">Celebration Location</span>
+                <h2 id="venue-heading" class="font-serif text-4xl text-rosewood mt-1">About The Venue</h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white p-8 sm:p-10 rounded-3xl border border-champagne-200/80 shadow-md text-center">
+                    <div class="flex items-center justify-center gap-3 text-champagne-600 mb-5">
+                        <i data-lucide="landmark" class="w-6 h-6" aria-hidden="true"></i>
+                        <span class="text-sm font-semibold uppercase tracking-wider">Wedding Venue</span>
+                    </div>
+                    <h3 id="venue-name" class="font-serif text-2xl sm:text-3xl text-rosewood mb-4"></h3>
+                    <p id="venue-description" class="text-sm sm:text-base text-rosewood/80 leading-relaxed mb-7"></p>
+                    <a data-wedding-map target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center justify-center gap-2 px-6 py-3 bg-champagne-50 hover:bg-champagne-100 border border-champagne-200 text-rosewood rounded-xl text-sm font-medium transition">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-champagne-600" aria-hidden="true"></i> Open Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wishes & Guestbook Section -->
+    <section id="wishes" aria-labelledby="guestbook-heading" class="py-20 bg-white border-t border-champagne-200/50">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-xs uppercase tracking-widest text-champagne-600 font-semibold">Leave A Note</span>
+                <h2 id="guestbook-heading" class="font-serif text-4xl text-rosewood mt-1">Guestbook & Warm Wishes</h2>
+                <p class="text-sm text-rosewood/70 mt-2 max-w-md mx-auto">
+                    Share your love, advice, or favorite memory with us as we count down to our wedding.
+                </p>
+            </div>
+
+            <!-- Form and List Grid -->
+            <div class="grid lg:grid-cols-3 gap-10">
+                <!-- Wishes Form -->
+                <div id="wish-form-panel" class="lg:col-span-1 bg-champagne-50 p-6 sm:p-8 rounded-3xl border border-champagne-200/80 shadow-sm h-fit">
+                    <h3 class="font-serif text-xl text-rosewood mb-4">Send Your Wishes</h3>
+                    <form id="wish-form" onsubmit="handleWishSubmit(event)" class="space-y-4" aria-describedby="wish-form-status">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-name">Your Name</label>
+                            <input type="text" id="guest-name" name="guest-name" autocomplete="name" required aria-required="true" placeholder="e.g. Aunt Clara" 
+                                   class="w-full min-h-11 px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-relation">Relationship (Optional)</label>
+                            <input type="text" id="guest-relation" name="guest-relation" autocomplete="off" placeholder="e.g. College Friend, Cousin" 
+                                   class="w-full min-h-11 px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-message">Message</label>
+                            <textarea id="guest-message" name="guest-message" rows="4" required aria-required="true" placeholder="Write your warm wishes here..." 
+                                      class="w-full px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400 resize-none"></textarea>
+                        </div>
+                        <p id="wish-form-status" class="text-sm text-rosewood/80" role="status" aria-live="polite"></p>
+                        <button type="submit" class="w-full min-h-11 py-3 bg-rosewood hover:bg-champagne-600 text-champagne-50 rounded-xl text-sm font-medium transition shadow-md">
+                            Post Wish
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Wishes Feed Grid -->
+                <div class="lg:col-span-2">
+                    <div id="wishes-container" class="grid sm:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1" role="list" aria-label="Guest wishes">
+                        <!-- Dynamic wishes appended here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-champagne-100/60 border-t border-champagne-200/80 text-center text-xs text-rosewood/70">
+        <div class="max-w-4xl mx-auto px-4 space-y-3">
+            <p id="footer-couple-names" class="font-cursive text-3xl text-rosewood"></p>
+            <p><span data-wedding-date></span> • <span data-wedding-location></span></p>
+            <p class="text-[11px] text-rosewood/50">Crafted with love for our upcoming wedding celebration.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Wedding configuration
+        const weddingConfig = {
+            brideName: "LY Chhun Y",
+            groomName: "Loeung Sovisal",
+
+            brideFather: "Mr LY Youlong",
+            brideMother: "Mrs Sam Keang",
+
+            groomFather: "H.E. Doung Loeung",
+            groomMother: "H.E. Sean Kimnang",
+
+            weddingDate: "2027-01-18",
+
+            timezone: "Asia/Phnom_Penh",
+
+            city: "Phnom Penh",
+            country: "Cambodia",
+
+            venueName: "Tonle Bassac Restaurant Function Hall",
+
+            ceremonyTime: "3:30 PM",
+
+            googleMapsUrl: "",
+            dressCode: "Formal"
+        };
+
+        const guestCsvUrl = new URL('guests.csv', window.location.href);
+        var guestName = 'Honoured Guest';
+
+        function parseGuestCsv(csvText) {
+            const rows = [];
+            let row = [];
+            let field = '';
+            let insideQuotes = false;
+
+            for (let index = 0; index < csvText.length; index++) {
+                const character = csvText[index];
+                if (character === '"') {
+                    if (insideQuotes && csvText[index + 1] === '"') {
+                        field += '"';
+                        index++;
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (character === ',' && !insideQuotes) {
+                    row.push(field);
+                    field = '';
+                } else if ((character === '\n' || character === '\r') && !insideQuotes) {
+                    if (character === '\r' && csvText[index + 1] === '\n') {
+                        index++;
+                    }
+                    row.push(field);
+                    rows.push(row);
+                    row = [];
+                    field = '';
+                } else {
+                    field += character;
+                }
+            }
+
+            if (insideQuotes) {
+                throw new SyntaxError('The guest CSV contains an unclosed quoted field.');
+            }
+            if (field.length || row.length) {
+                row.push(field);
+                rows.push(row);
+            }
+
+            const nonemptyRows = rows.filter(values => values.some(value => value.trim()));
+            if (!nonemptyRows.length) {
+                throw new Error('The guest CSV is empty.');
+            }
+
+            const headers = nonemptyRows[0].map(value => value.trim().replace(/^\uFEFF/, '').toLowerCase());
+            const idColumn = headers.indexOf('id');
+            const nameColumn = headers.indexOf('name');
+            if (idColumn === -1 || nameColumn === -1) {
+                throw new Error('The guest CSV must contain id and name columns.');
+            }
+
+            return nonemptyRows.slice(1)
+                .map(values => ({
+                    id: (values[idColumn] || '').trim(),
+                    name: (values[nameColumn] || '').trim()
+                }))
+                .filter(guest => guest.id && guest.name);
+        }
+
+        async function loadGuestDataset() {
+            const response = await fetch(guestCsvUrl, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`Unable to load guests.csv (${response.status}).`);
+            }
+            return parseGuestCsv(await response.text());
+        }
+
+        async function resolveGuestName(search = window.location.search) {
+            const params = new URLSearchParams(search);
+            const namedGuest = params.get('guest')?.trim();
+            if (namedGuest) {
+                return namedGuest;
+            }
+
+            const guestId = params.get('id')?.trim();
+            if (!guestId) {
+                return 'Honoured Guest';
+            }
+
+            const guestDataset = await loadGuestDataset();
+            const guest = guestDataset.find(entry => entry.id === guestId);
+            return guest?.name || 'Honoured Guest';
+        }
+
+        async function initializeGuestIdentity() {
+            const greeting = document.getElementById('guest-greeting');
+            const status = document.getElementById('guest-load-status');
+            try {
+                guestName = await resolveGuestName();
+            } catch (error) {
+                console.error('Guest identification failed:', error);
+                guestName = 'Honoured Guest';
+                status.textContent = 'We could not load the guest list. Please check that you are using the latest invitation link.';
+                status.classList.remove('hidden');
+            }
+            greeting.textContent = `Dear ${guestName},`;
+        }
+
+        // Preloaded Initial Guestbook Wishes
+        const defaultWishes = [
+            { name: "Grandma Evelyn", relation: "Family", message: "Wishing you both a lifetime filled with unconditional love, warmth, and everlasting joy! We can't wait to celebrate!", date: "Just now" },
+            { name: "Marcus & Elena", relation: "College Friends", message: "So thrilled to celebrate with you guys! Get ready for endless dancing at the reception!", date: "2 hours ago" },
+            { name: "David Chen", relation: "Family", message: "Welcome to the family! So happy for my brother. Wishing you two the absolute best.", date: "1 day ago" }
+        ];
+
+        // Initialize Icons & UI on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderWeddingConfig();
+            initializeGuestIdentity();
+            lucide.createIcons();
+            startCountdown();
+            startTimelineReveal();
+            renderWishes(defaultWishes);
+            const sectionLinks = document.querySelector('.mobile-section-links');
+            sectionLinks.addEventListener('focusin', event => {
+                const link = event.target.closest('a[href]');
+                if (!link) {
+                    return;
+                }
+
+                const linkBounds = link.getBoundingClientRect();
+                const menuBounds = sectionLinks.getBoundingClientRect();
+                if (linkBounds.right > menuBounds.right) {
+                    sectionLinks.scrollLeft += linkBounds.right - menuBounds.right;
+                } else if (linkBounds.left < menuBounds.left) {
+                    sectionLinks.scrollLeft -= menuBounds.left - linkBounds.left;
+                }
+            });
+        });
+
+        // Wedding date and timezone helpers
+        function parseWeddingDate() {
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(weddingConfig.weddingDate);
+            if (!match) {
+                throw new RangeError(`Invalid wedding date: ${weddingConfig.weddingDate}`);
+            }
+
+            const year = Number(match[1]);
+            const month = Number(match[2]);
+            const day = Number(match[3]);
+            const date = new Date(Date.UTC(year, month - 1, day));
+            if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+                throw new RangeError(`Invalid wedding date: ${weddingConfig.weddingDate}`);
+            }
+
+            return { year, month, day };
+        }
+
+        function formatWeddingDate() {
+            const { year, month, day } = parseWeddingDate();
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: 'UTC',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).format(new Date(Date.UTC(year, month - 1, day)));
+        }
+
+        function getWeddingDateTime() {
+            const { year, month, day } = parseWeddingDate();
+            const timeMatch = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(weddingConfig.ceremonyTime);
+            if (!timeMatch) {
+                throw new RangeError(`Invalid wedding ceremony time: ${weddingConfig.ceremonyTime}`);
+            }
+
+            const hour12 = Number(timeMatch[1]);
+            let hour = hour12 % 12;
+            const minute = Number(timeMatch[2]);
+            if (hour12 < 1 || hour12 > 12 || minute > 59) {
+                throw new RangeError(`Invalid wedding ceremony time: ${weddingConfig.ceremonyTime}`);
+            }
+            if (timeMatch[3].toUpperCase() === 'PM') {
+                hour += 12;
+            }
+
+            const localTimestamp = Date.UTC(year, month - 1, day, hour, minute);
+            const formatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: weddingConfig.timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hourCycle: 'h23'
+            });
+            let timestamp = localTimestamp;
+
+            for (let attempt = 0; attempt < 3; attempt++) {
+                const parts = Object.fromEntries(
+                    formatter.formatToParts(new Date(timestamp))
+                        .filter(part => part.type !== 'literal')
+                        .map(part => [part.type, Number(part.value)])
+                );
+                const representedTimestamp = Date.UTC(
+                    parts.year,
+                    parts.month - 1,
+                    parts.day,
+                    parts.hour,
+                    parts.minute,
+                    parts.second
+                );
+                const correctedTimestamp = timestamp + localTimestamp - representedTimestamp;
+                if (correctedTimestamp === timestamp) {
+                    return timestamp;
+                }
+                timestamp = correctedTimestamp;
+            }
+
+            return timestamp;
+        }
+
+        function renderWeddingConfig() {
+            const coupleNames = `${weddingConfig.brideName} & ${weddingConfig.groomName}`;
+            const location = `${weddingConfig.city}, ${weddingConfig.country}`;
+            const formattedDate = formatWeddingDate();
+            const mapUrl = weddingConfig.googleMapsUrl ||
+                `https://maps.google.com/?q=${encodeURIComponent(`${weddingConfig.venueName}, ${location}`)}`;
+
+            document.title = `${coupleNames} — Our Wedding Day`;
+            document.getElementById('couple-monogram').textContent =
+                `${weddingConfig.brideName.trim()[0]} & ${weddingConfig.groomName.trim()[0]}`;
+            document.getElementById('bride-name').textContent = weddingConfig.brideName;
+            document.getElementById('groom-name').textContent = weddingConfig.groomName;
+            document.getElementById('footer-couple-names').textContent = coupleNames;
+            const brideHosts = document.getElementById('bride-hosts');
+            const groomHosts = document.getElementById('groom-hosts');
+            brideHosts.replaceChildren();
+            groomHosts.replaceChildren();
+            [weddingConfig.brideFather, weddingConfig.brideMother].forEach(name => {
+                const host = document.createElement('p');
+                host.className = 'font-serif text-base sm:text-lg md:text-xl text-rosewood';
+                host.textContent = name;
+                brideHosts.appendChild(host);
+            });
+            [weddingConfig.groomFather, weddingConfig.groomMother].forEach(name => {
+                const host = document.createElement('p');
+                host.className = 'font-serif text-base sm:text-lg md:text-xl text-rosewood';
+                host.textContent = name;
+                groomHosts.appendChild(host);
+            });
+            document.getElementById('couple-photo').alt = coupleNames;
+            document.getElementById('couple-photo').onerror = function () {
+                this.src = `https://placehold.co/800x1000/E7E3D1/174431?text=${encodeURIComponent(coupleNames)}`;
+            };
+
+            document.querySelectorAll('[data-wedding-date]').forEach(element => {
+                element.textContent = formattedDate;
+            });
+            document.querySelectorAll('[data-wedding-location]').forEach(element => {
+                element.textContent = location;
+            });
+            document.querySelectorAll('[data-wedding-map]').forEach(link => {
+                link.href = mapUrl;
+            });
+
+            document.getElementById('timeline-welcome-time').textContent = 'Before the ceremony';
+            document.getElementById('timeline-ceremony-time').textContent = weddingConfig.ceremonyTime;
+            document.getElementById('venue-name').textContent = weddingConfig.venueName;
+            document.getElementById('venue-description').textContent =
+                `The ceremony will be hosted at ${weddingConfig.venueName} in ${location}.`;
+        }
+
+        // Countdown
+        function startCountdown() {
+            const weddingDate = getWeddingDateTime();
+
+            function update() {
+                const now = new Date().getTime();
+                const distance = weddingDate - now;
+
+                if (distance < 0) {
+                    document.getElementById('count-days').innerText = "00";
+                    document.getElementById('count-hours').innerText = "00";
+                    document.getElementById('count-mins').innerText = "00";
+                    document.getElementById('count-secs').innerText = "00";
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('count-days').innerText = days.toString().padStart(2, '0');
+                document.getElementById('count-hours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('count-mins').innerText = minutes.toString().padStart(2, '0');
+                document.getElementById('count-secs').innerText = seconds.toString().padStart(2, '0');
+            }
+
+            update();
+            setInterval(update, 1000);
+        }
+
+        // Timeline
+        function startTimelineReveal() {
+            const items = document.querySelectorAll('.timeline-item');
+            if (!('IntersectionObserver' in window)) {
+                items.forEach(item => item.classList.add('is-visible'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries, timelineObserver) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        timelineObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            items.forEach((item, index) => {
+                item.style.transitionDelay = `${index * 100}ms`;
+                observer.observe(item);
+            });
+        }
+
+        // ------------------------------------
+        // GUESTBOOK WISHES LOGIC
+        // ------------------------------------
+        function renderWishes(wishes) {
+            const container = document.getElementById('wishes-container');
+            container.innerHTML = wishes.map(w => `
+                <article role="listitem" class="bg-champagne-50/70 p-5 rounded-2xl border border-champagne-200/60 flex flex-col justify-between shadow-sm hover:shadow transition">
+                    <p class="text-xs sm:text-sm text-rosewood/90 italic mb-4">"${escapeHtml(w.message)}"</p>
+                    <div class="pt-3 border-t border-champagne-200/40 flex justify-between items-end">
+                        <div>
+                            <h4 class="font-serif font-semibold text-rosewood text-sm">${escapeHtml(w.name)}</h4>
+                            ${w.relation ? `<span class="text-[11px] text-champagne-600">${escapeHtml(w.relation)}</span>` : ''}
+                        </div>
+                        <span class="text-[10px] text-rosewood/40">${w.date}</span>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        function handleWishSubmit(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('guest-name');
+            const relationInput = document.getElementById('guest-relation');
+            const messageInput = document.getElementById('guest-message');
+            const formStatus = document.getElementById('wish-form-status');
+
+            nameInput.setCustomValidity(nameInput.value.trim() ? '' : 'Please enter your name.');
+            messageInput.setCustomValidity(messageInput.value.trim() ? '' : 'Please enter a message.');
+            if (!nameInput.checkValidity()) {
+                nameInput.reportValidity();
+                return;
+            }
+            if (!messageInput.checkValidity()) {
+                messageInput.reportValidity();
+                return;
+            }
+
+            const newWish = {
+                name: nameInput.value.trim(),
+                relation: relationInput.value.trim(),
+                message: messageInput.value.trim(),
+                date: "Just now"
+            };
+
+            defaultWishes.unshift(newWish);
+            renderWishes(defaultWishes);
+
+            // Reset form
+            nameInput.value = '';
+            relationInput.value = '';
+            messageInput.value = '';
+            formStatus.textContent = 'Your wish has been added to the guestbook.';
+        }
+
+        // Shared text helper
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+    </script>
+</body>
+</html>
