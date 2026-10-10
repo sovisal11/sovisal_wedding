@@ -113,122 +113,36 @@
         .camera-frame img { display: none; }
         .camera-frame.is-captured video { display: none; }
         .camera-frame.is-captured img { display: block; }
-        .camera-frame.is-captured .story-frame { display: none; }
-        .story-frame {
+        .camera-frame.is-captured .style-overlay,
+        .camera-frame.is-captured .focus-indicator { display: none; }
+        .style-overlay {
             position: absolute;
             z-index: 1;
             inset: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            opacity: 1;
+        }
+        .focus-indicator {
+            position: absolute;
+            z-index: 2;
+            width: 72px;
+            height: 72px;
+            border: 1px solid rgba(255, 232, 163, 0.96);
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22), inset 0 0 12px rgba(255, 232, 163, 0.12);
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(1.12);
             transition: opacity 180ms ease, transform 180ms ease;
         }
-        .story-frame.frame-changing {
-            opacity: 0.35;
-            transform: scale(0.985);
+        .focus-indicator.is-visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
-        .frame-border {
-            position: absolute;
-            inset: 14px;
-            border: 2px solid rgba(247, 225, 171, 0.88);
-            box-shadow: inset 0 0 0 4px rgba(20, 35, 25, 0.18), 0 0 16px rgba(0, 0, 0, 0.14);
-        }
-        .story-frame[data-frame="khmer-luxury"] .frame-border {
-            inset: 11px;
-            border: 4px double #e4c87e;
-            box-shadow: inset 0 0 0 4px rgba(111, 40, 45, 0.22), 0 0 18px rgba(0, 0, 0, 0.18);
-        }
-        .story-frame[data-frame="emerald-garden"] .frame-border {
-            inset: 14px;
-            border: 2px solid rgba(211, 230, 187, 0.9);
-            border-radius: 32px 4px 32px 4px;
-            box-shadow: inset 0 0 0 5px rgba(28, 83, 54, 0.2);
-        }
-        .story-frame[data-frame="cartoon-couple"] .frame-border {
-            inset: 18px;
-            border: 3px solid #fff2dc;
-            border-radius: 28px;
-            box-shadow: inset 0 0 0 5px rgba(236, 158, 155, 0.4), 0 0 0 2px rgba(92, 61, 89, 0.55);
-        }
-        .story-frame[data-frame="retro-film"] .frame-border {
-            inset: 12px;
-            border: 7px solid rgba(255, 238, 199, 0.88);
-            box-shadow: inset 0 0 0 2px rgba(80, 55, 37, 0.48);
-        }
-        .frame-corner {
-            position: absolute;
-            width: 34px;
-            height: 34px;
-            color: #f3dda5;
-            font-family: Georgia, serif;
-            font-size: 26px;
-            line-height: 1;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
-        }
-        .frame-corner.top-left { top: 17px; left: 18px; }
-        .frame-corner.top-right { top: 17px; right: 18px; transform: rotate(90deg); }
-        .frame-corner.bottom-left { bottom: 17px; left: 18px; transform: rotate(-90deg); }
-        .frame-corner.bottom-right { bottom: 17px; right: 18px; transform: rotate(180deg); }
-        .story-frame[data-frame="khmer-luxury"] .frame-corner { color: #f4d378; }
-        .story-frame[data-frame="emerald-garden"] .frame-corner { color: #d8e6bf; }
-        .story-frame[data-frame="cartoon-couple"] .frame-corner { color: #ffe4df; }
-        .story-frame[data-frame="retro-film"] .frame-corner { color: #fff0cb; }
-        .frame-brand {
-            position: absolute;
-            right: 9%;
-            bottom: 29%;
-            left: 9%;
-            display: grid;
-            justify-items: center;
-            gap: 3px;
-            padding: 10px 8px;
-            border: 1px solid rgba(255, 245, 220, 0.62);
-            background: rgba(18, 37, 27, 0.58);
-            color: #fff8e8;
-            font-family: Georgia, serif;
-            font-size: clamp(11px, 3vw, 17px);
-            letter-spacing: 0.025em;
-            line-height: 1.25;
-            text-align: center;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(3px);
-        }
-        .frame-title {
-            position: absolute;
-            top: 7%;
-            left: 15%;
-            right: 15%;
-            color: #fff8e8;
-            font-family: Georgia, serif;
-            font-size: 10px;
-            letter-spacing: 0.18em;
-            text-align: center;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.72);
-            text-transform: uppercase;
-        }
-        .frame-brand small {
-            color: #f3dda5;
-            font-family: Inter, Arial, sans-serif;
-            font-size: 9px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-        .story-frame[data-frame="khmer-luxury"] .frame-brand {
-            border-color: #e4c87e;
-            background: rgba(87, 30, 38, 0.72);
-        }
-        .story-frame[data-frame="emerald-garden"] .frame-brand {
-            border-color: #d8e6bf;
-            background: rgba(24, 70, 46, 0.7);
-        }
-        .story-frame[data-frame="cartoon-couple"] .frame-brand {
-            border: 2px solid #fff2dc;
-            border-radius: 18px;
-            background: rgba(91, 55, 84, 0.66);
-        }
-        .story-frame[data-frame="retro-film"] .frame-brand {
-            border-style: dashed;
-            background: rgba(60, 43, 32, 0.68);
-            font-family: "Courier New", monospace;
+        .focus-indicator.is-complete {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.94);
         }
         .camera-state {
             position: absolute;
@@ -464,7 +378,8 @@
             box-shadow: none;
         }
         .camera-frame video,
-        .camera-frame img {
+        .camera-frame img,
+        .camera-frame canvas.style-overlay {
             object-fit: cover;
             object-position: center;
         }
@@ -511,6 +426,18 @@
             padding: 18px 16px max(22px, env(safe-area-inset-bottom));
             background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
             touch-action: none;
+        }
+        @media (orientation: landscape) {
+            .app {
+                top: 50%;
+                left: 50%;
+                right: auto;
+                bottom: auto;
+                width: 100vh;
+                height: 100vw;
+                transform: translate(-50%, -50%) rotate(90deg);
+                transform-origin: center;
+            }
         }
         .status {
             position: absolute;
@@ -588,17 +515,8 @@
             <section id="camera-frame" class="camera-frame" aria-label="Camera preview">
                 <video id="camera-video" autoplay playsinline muted aria-label="Live camera preview"></video>
                 <img id="photo-preview" alt="Your captured wedding photo">
-                <div id="story-frame" class="story-frame" data-frame="wedding-classic" aria-hidden="true">
-                    <div class="frame-border"></div>
-                    <span class="frame-corner top-left">❧</span>
-                    <span class="frame-corner top-right">❧</span>
-                    <span class="frame-corner bottom-left">❧</span>
-                    <span class="frame-corner bottom-right">❧</span>
-                    <div class="frame-brand">
-                        <span>LY Chhun Y ♥ Loeung Sovisal</span>
-                        <small>18 January 2027</small>
-                    </div>
-                </div>
+                <canvas id="style-overlay" class="style-overlay" aria-hidden="true"></canvas>
+                <div id="focus-indicator" class="focus-indicator" aria-hidden="true"></div>
                 <div id="camera-state" class="camera-state" role="status" aria-live="polite">
                     <span id="loading-spinner" class="state-spinner" aria-hidden="true"></span>
                     <p id="state-message" class="state-message">Starting your camera…</p>
@@ -635,6 +553,7 @@
         const captureButton = document.getElementById('capture-button');
         const flipButton = document.getElementById('flip-button');
         const flashButton = document.getElementById('flash-button');
+        const focusIndicator = document.getElementById('focus-indicator');
         const photoActions = document.getElementById('photo-actions');
         const retakeButton = document.getElementById('retake-button');
         const acceptButton = document.getElementById('accept-button');
@@ -643,8 +562,8 @@
         const zoomChips = document.getElementById('zoom-chips');
         const weddingStyleLabel = document.getElementById('wedding-style-label');
         const styleDiscovery = document.getElementById('style-discovery');
-        const storyFrame = document.getElementById('story-frame');
-        const frameCorners = [...storyFrame.querySelectorAll('.frame-corner')];
+        const styleOverlay = document.getElementById('style-overlay');
+        const styleOverlayContext = styleOverlay.getContext('2d');
 
         let stream = null;
         let facingMode = 'environment';
@@ -668,6 +587,9 @@
         let styleDiscoveryTimer = 0;
         let zoomScrub = null;
         let suppressZoomClick = false;
+        let focusIndicatorTimer = 0;
+        let focusRequestVersion = 0;
+        let overlayFrameCallbackId = 0;
 
         const weddingStyles = [
             { id: 'wedding-classic', name: 'Wedding Classic', glyph: '❧', color: '#f3dda5', filter: 'saturate(0.72) contrast(1.07) brightness(1.03)', personality: 'timeless and refined' },
@@ -707,7 +629,8 @@
             cameraState.hidden = false;
             loadingSpinner.hidden = true;
             retryButton.hidden = false;
-            storyFrame.hidden = true;
+            styleOverlay.hidden = true;
+            focusIndicator.classList.remove('is-visible', 'is-complete');
             stateMessage.textContent = message;
             status.textContent = message;
             captureButton.disabled = true;
@@ -718,7 +641,7 @@
 
         function setCameraLive() {
             cameraState.hidden = true;
-            storyFrame.hidden = false;
+            styleOverlay.hidden = false;
             captureButton.disabled = false;
             flipButton.disabled = false;
             status.textContent = 'Camera ready';
@@ -797,12 +720,9 @@
         function setWeddingStyle(index) {
             selectedStyleIndex = (index + weddingStyles.length) % weddingStyles.length;
             const selected = weddingStyles[selectedStyleIndex];
-            storyFrame.classList.add('frame-changing');
-            storyFrame.dataset.frame = selected.id;
             video.style.filter = selected.filter;
             weddingStyleLabel.textContent = selected.name;
-            frameCorners.forEach(corner => { corner.textContent = selected.glyph; });
-            window.setTimeout(() => storyFrame.classList.remove('frame-changing'), 160);
+            drawWeddingStyleOverlay();
         }
 
         function stepWeddingStyle(direction) {
@@ -1000,13 +920,59 @@
             const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
             setZoom(pinchZoomStart * distance / pinchDistanceStart);
         });
+        async function focusAt(event) {
+            if (!stream || capturedPhoto || !cameraState.hidden) {
+                return;
+            }
+
+            const bounds = frame.getBoundingClientRect();
+            const landscape = window.matchMedia('(orientation: landscape)').matches;
+            const localX = landscape
+                ? event.clientY - bounds.top
+                : event.clientX - bounds.left;
+            const localY = landscape
+                ? bounds.width - (event.clientX - bounds.left)
+                : event.clientY - bounds.top;
+            const x = Math.max(0, Math.min(1, localX / frame.clientWidth));
+            const y = Math.max(0, Math.min(1, localY / frame.clientHeight));
+            focusIndicator.style.left = `${x * 100}%`;
+            focusIndicator.style.top = `${y * 100}%`;
+            focusIndicator.classList.remove('is-complete');
+            focusIndicator.classList.add('is-visible');
+            window.clearTimeout(focusIndicatorTimer);
+
+            const focusRequest = ++focusRequestVersion;
+            const track = stream.getVideoTracks()[0];
+            try {
+                const focusModes = track.getCapabilities?.().focusMode;
+                if (Array.isArray(focusModes) && focusModes.includes('single-shot')
+                    && typeof track.applyConstraints === 'function') {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                }
+            } catch (error) {
+                console.info('Tap-to-focus is unavailable; showing the focus indicator only.', error);
+            }
+
+            if (focusRequest === focusRequestVersion) {
+                focusIndicatorTimer = window.setTimeout(() => {
+                    focusIndicator.classList.add('is-complete');
+                    window.setTimeout(() => focusIndicator.classList.remove('is-visible', 'is-complete'), 220);
+                }, 450);
+            }
+        }
+
         const finishGesture = event => {
             const point = gesturePointers.get(event.pointerId);
             if (point && gestureStart && !gestureWasPinch && !capturedPhoto) {
                 const deltaX = point.x - gestureStart.x;
                 const deltaY = point.y - gestureStart.y;
-                if (Math.abs(deltaX) > 52 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
-                    stepWeddingStyle(deltaX < 0 ? 1 : -1);
+                const landscape = window.matchMedia('(orientation: landscape)').matches;
+                const styleDelta = landscape ? deltaY : deltaX;
+                const crossDelta = landscape ? deltaX : deltaY;
+                if (Math.abs(styleDelta) > 52 && Math.abs(styleDelta) > Math.abs(crossDelta) * 1.2) {
+                    stepWeddingStyle(styleDelta < 0 ? 1 : -1);
+                } else if (Math.hypot(deltaX, deltaY) < 14) {
+                    focusAt(event);
                 }
             }
             gesturePointers.delete(event.pointerId);
@@ -1019,10 +985,21 @@
         gestureSurface.addEventListener('pointerup', finishGesture);
         gestureSurface.addEventListener('pointercancel', finishGesture);
 
+        function lockPortraitOrientation() {
+            if (typeof screen.orientation?.lock !== 'function') {
+                return;
+            }
+            screen.orientation.lock('portrait').catch(error => {
+                console.info('Native portrait orientation lock is unavailable; keeping a portrait-first layout.', error);
+            });
+        }
+
         async function startCamera(nextFacingMode = facingMode) {
             const currentRequest = ++requestId;
+            lockPortraitOrientation();
             const previousStream = stream;
             const previousDeviceId = previousStream?.getVideoTracks()[0]?.getSettings().deviceId;
+            stopWeddingStyleOverlayMonitor();
             stream = null;
             stopStream(previousStream);
             video.srcObject = null;
@@ -1108,6 +1085,8 @@
                     return;
                 }
 
+                monitorWeddingStyleOverlay();
+
                 if (video.videoWidth > 0 && video.videoHeight > 0) {
                     setCameraLive();
                 } else {
@@ -1190,12 +1169,19 @@
             }
         }
 
-        function drawStoryFrame(context, width, height) {
+        function drawWeddingStyleOverlay() {
+            const context = styleOverlayContext;
+            const width = styleOverlay.width;
+            const height = styleOverlay.height;
+            if (!context || !width || !height) {
+                return;
+            }
             const selected = weddingStyles[selectedStyleIndex];
             const scale = Math.min(width, height);
             const inset = selected.id === 'khmer-luxury' ? scale * 0.022 : scale * 0.03;
             const color = selected.color;
 
+            context.clearRect(0, 0, width, height);
             context.save();
             context.strokeStyle = color;
             context.lineWidth = Math.max(3, scale * (selected.id === 'retro-film' ? 0.018 : 0.007));
@@ -1223,7 +1209,7 @@
 
             const brandHeight = height * 0.085;
             const brandX = width * 0.09;
-            const brandY = height * 0.89;
+            const brandY = height * 0.71;
             context.fillStyle = selected.id === 'khmer-luxury'
                 ? 'rgba(87, 30, 38, 0.84)'
                 : selected.id === 'emerald-garden'
@@ -1245,17 +1231,60 @@
             context.restore();
         }
 
+        function resizeWeddingStyleOverlay() {
+            const pixelRatio = window.devicePixelRatio || 1;
+            const width = Math.round(frame.clientWidth * pixelRatio);
+            const height = Math.round(frame.clientHeight * pixelRatio);
+            if (styleOverlay.width === width && styleOverlay.height === height) {
+                return;
+            }
+            styleOverlay.width = width;
+            styleOverlay.height = height;
+            drawWeddingStyleOverlay();
+        }
+
+        function monitorWeddingStyleOverlay() {
+            if (!stream || typeof video.requestVideoFrameCallback !== 'function') {
+                overlayFrameCallbackId = 0;
+                return;
+            }
+            overlayFrameCallbackId = video.requestVideoFrameCallback(() => {
+                resizeWeddingStyleOverlay();
+                monitorWeddingStyleOverlay();
+            });
+        }
+
+        function stopWeddingStyleOverlayMonitor() {
+            if (overlayFrameCallbackId && typeof video.cancelVideoFrameCallback === 'function') {
+                video.cancelVideoFrameCallback(overlayFrameCallbackId);
+            }
+            overlayFrameCallbackId = 0;
+        }
+
+        const overlayResizeObserver = new ResizeObserver(resizeWeddingStyleOverlay);
+        overlayResizeObserver.observe(frame);
+        window.addEventListener('resize', resizeWeddingStyleOverlay);
+        window.addEventListener('orientationchange', resizeWeddingStyleOverlay);
+        window.visualViewport?.addEventListener('resize', resizeWeddingStyleOverlay);
+        const orientationQuery = window.matchMedia('(orientation: landscape)');
+        if (typeof orientationQuery.addEventListener === 'function') {
+            orientationQuery.addEventListener('change', resizeWeddingStyleOverlay);
+        } else {
+            orientationQuery.addListener(resizeWeddingStyleOverlay);
+        }
+
         async function capturePhoto() {
             if (!stream || !video.videoWidth || !video.videoHeight || captureButton.disabled) {
                 return;
             }
 
+            resizeWeddingStyleOverlay();
             captureButton.disabled = true;
             status.textContent = 'Capturing photo…';
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = styleOverlay.width;
+            canvas.height = styleOverlay.height;
             const context = canvas.getContext('2d');
-            if (!context) {
+            if (!context || !canvas.width || !canvas.height) {
                 status.textContent = 'Could not capture the photo. Please try again.';
                 captureButton.disabled = false;
                 return;
@@ -1263,8 +1292,16 @@
 
             try {
                 const zoom = nativeZoomSupported ? 1 : Math.max(1, zoomValue);
-                const sourceWidth = video.videoWidth / zoom;
-                const sourceHeight = video.videoHeight / zoom;
+                const outputAspect = canvas.width / canvas.height;
+                let sourceWidth = video.videoWidth;
+                let sourceHeight = video.videoHeight;
+                if (sourceWidth / sourceHeight > outputAspect) {
+                    sourceWidth = sourceHeight * outputAspect;
+                } else {
+                    sourceHeight = sourceWidth / outputAspect;
+                }
+                sourceWidth /= zoom;
+                sourceHeight /= zoom;
                 const sourceX = (video.videoWidth - sourceWidth) / 2;
                 const sourceY = (video.videoHeight - sourceHeight) / 2;
                 context.setTransform(1, 0, 0, 1, 0, 0);
@@ -1280,7 +1317,7 @@
                     context.restore();
                 }
                 context.filter = 'none';
-                drawStoryFrame(context, canvas.width, canvas.height);
+                context.drawImage(styleOverlay, 0, 0, canvas.width, canvas.height);
                 canvas.toBlob(blob => {
                     if (!blob) {
                         status.textContent = 'Could not capture the photo. Please try again.';
@@ -1344,6 +1381,7 @@
         acceptButton.addEventListener('click', acceptPhoto);
         window.addEventListener('pagehide', () => {
             requestId++;
+            stopWeddingStyleOverlayMonitor();
             stopStream(stream);
             stream = null;
             clearPreviewUrl();
@@ -1356,6 +1394,7 @@
             }
         });
 
+        resizeWeddingStyleOverlay();
         setWeddingStyle(0);
         startCamera();
     </script>
