@@ -108,10 +108,132 @@
             object-position: center;
             background: #050806;
         }
-        .camera-frame video.front-camera { transform: scaleX(-1); }
+        .camera-frame video { transform: scale(var(--digital-zoom, 1)); }
+        .camera-frame video.front-camera { transform: scaleX(-1) scale(var(--digital-zoom, 1)); }
+        .camera-frame[data-filter="golden-romance"] video { filter: sepia(0.2) saturate(1.2) brightness(1.04); }
+        .camera-frame[data-filter="emerald-garden"] video { filter: saturate(0.84) hue-rotate(8deg) contrast(1.04); }
+        .camera-frame[data-filter="soft-sunset"] video { filter: sepia(0.15) saturate(1.14) brightness(1.06); }
+        .camera-frame[data-filter="classic-wedding"] video { filter: saturate(0.72) contrast(1.07) brightness(1.03); }
         .camera-frame img { display: none; }
         .camera-frame.is-captured video { display: none; }
         .camera-frame.is-captured img { display: block; }
+        .camera-frame.is-captured .story-frame { display: none; }
+        .story-frame {
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 180ms ease, transform 180ms ease;
+        }
+        .story-frame.frame-changing {
+            opacity: 0.35;
+            transform: scale(0.985);
+        }
+        .frame-border {
+            position: absolute;
+            inset: 14px;
+            border: 2px solid rgba(247, 225, 171, 0.88);
+            box-shadow: inset 0 0 0 4px rgba(20, 35, 25, 0.18), 0 0 16px rgba(0, 0, 0, 0.14);
+        }
+        .story-frame[data-frame="khmer-luxury"] .frame-border {
+            inset: 11px;
+            border: 4px double #e4c87e;
+            box-shadow: inset 0 0 0 4px rgba(111, 40, 45, 0.22), 0 0 18px rgba(0, 0, 0, 0.18);
+        }
+        .story-frame[data-frame="emerald-garden"] .frame-border {
+            inset: 14px;
+            border: 2px solid rgba(211, 230, 187, 0.9);
+            border-radius: 32px 4px 32px 4px;
+            box-shadow: inset 0 0 0 5px rgba(28, 83, 54, 0.2);
+        }
+        .story-frame[data-frame="cartoon-couple"] .frame-border {
+            inset: 18px;
+            border: 3px solid #fff2dc;
+            border-radius: 28px;
+            box-shadow: inset 0 0 0 5px rgba(236, 158, 155, 0.4), 0 0 0 2px rgba(92, 61, 89, 0.55);
+        }
+        .story-frame[data-frame="retro-film"] .frame-border {
+            inset: 12px;
+            border: 7px solid rgba(255, 238, 199, 0.88);
+            box-shadow: inset 0 0 0 2px rgba(80, 55, 37, 0.48);
+        }
+        .frame-corner {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            color: #f3dda5;
+            font-family: Georgia, serif;
+            font-size: 26px;
+            line-height: 1;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+        }
+        .frame-corner.top-left { top: 17px; left: 18px; }
+        .frame-corner.top-right { top: 17px; right: 18px; transform: rotate(90deg); }
+        .frame-corner.bottom-left { bottom: 17px; left: 18px; transform: rotate(-90deg); }
+        .frame-corner.bottom-right { bottom: 17px; right: 18px; transform: rotate(180deg); }
+        .story-frame[data-frame="khmer-luxury"] .frame-corner { color: #f4d378; }
+        .story-frame[data-frame="emerald-garden"] .frame-corner { color: #d8e6bf; }
+        .story-frame[data-frame="cartoon-couple"] .frame-corner { color: #ffe4df; }
+        .story-frame[data-frame="retro-film"] .frame-corner { color: #fff0cb; }
+        .frame-brand {
+            position: absolute;
+            right: 9%;
+            bottom: 29%;
+            left: 9%;
+            display: grid;
+            justify-items: center;
+            gap: 3px;
+            padding: 10px 8px;
+            border: 1px solid rgba(255, 245, 220, 0.62);
+            background: rgba(18, 37, 27, 0.58);
+            color: #fff8e8;
+            font-family: Georgia, serif;
+            font-size: clamp(11px, 3vw, 17px);
+            letter-spacing: 0.025em;
+            line-height: 1.25;
+            text-align: center;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(3px);
+        }
+        .frame-title {
+            position: absolute;
+            top: 7%;
+            left: 15%;
+            right: 15%;
+            color: #fff8e8;
+            font-family: Georgia, serif;
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            text-align: center;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.72);
+            text-transform: uppercase;
+        }
+        .frame-brand small {
+            color: #f3dda5;
+            font-family: Inter, Arial, sans-serif;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+        .story-frame[data-frame="khmer-luxury"] .frame-brand {
+            border-color: #e4c87e;
+            background: rgba(87, 30, 38, 0.72);
+        }
+        .story-frame[data-frame="emerald-garden"] .frame-brand {
+            border-color: #d8e6bf;
+            background: rgba(24, 70, 46, 0.7);
+        }
+        .story-frame[data-frame="cartoon-couple"] .frame-brand {
+            border: 2px solid #fff2dc;
+            border-radius: 18px;
+            background: rgba(91, 55, 84, 0.66);
+        }
+        .story-frame[data-frame="retro-film"] .frame-brand {
+            border-style: dashed;
+            background: rgba(60, 43, 32, 0.68);
+            font-family: "Courier New", monospace;
+        }
         .camera-state {
             position: absolute;
             inset: 0;
@@ -218,6 +340,78 @@
             text-align: center;
         }
         .accepted-message[hidden] { display: none; }
+        .zoom-chips {
+            position: absolute;
+            z-index: 2;
+            top: calc(82px + env(safe-area-inset-top));
+            left: 50%;
+            display: flex;
+            gap: 8px;
+            transform: translateX(-50%);
+        }
+        .zoom-chips[hidden] { display: none; }
+        .zoom-chip {
+            min-width: 42px;
+            min-height: 34px;
+            padding: 0 9px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+            background: rgba(15, 19, 17, 0.42);
+            color: rgba(255, 255, 255, 0.86);
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        }
+        .zoom-chip[aria-pressed="true"] {
+            border-color: rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.86);
+            color: #172018;
+        }
+        .filter-panel {
+            display: grid;
+            gap: 4px;
+            width: min(100%, 340px);
+            padding: 8px 10px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+            background: rgba(18, 24, 21, 0.42);
+            backdrop-filter: blur(14px);
+        }
+        .filter-panel[hidden] { display: none; }
+        .filter-current {
+            min-height: 15px;
+            color: rgba(255, 255, 255, 0.94);
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+        }
+        .filter-selector {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            touch-action: none;
+            overscroll-behavior-x: contain;
+            cursor: grab;
+        }
+        .filter-selector::-webkit-scrollbar { display: none; }
+        .filter-option {
+            flex: 0 0 auto;
+            min-height: 30px;
+            padding: 0 10px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        .filter-option[aria-pressed="true"] {
+            border-color: rgba(255, 255, 255, 0.68);
+            background: rgba(255, 255, 255, 0.88);
+            color: #182019;
+        }
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -261,6 +455,7 @@
             padding: 0;
             overflow: hidden;
             background: #050806;
+            touch-action: none;
         }
         .camera-region {
             position: absolute;
@@ -299,36 +494,6 @@
         }
         .top-title { display: none; }
         .top-tools { grid-column: 2; gap: 12px; }
-        .camera-device-picker {
-            position: absolute;
-            z-index: 3;
-            top: calc(74px + env(safe-area-inset-top));
-            left: 16px;
-            right: 16px;
-            display: grid;
-            justify-items: center;
-            gap: 4px;
-            pointer-events: none;
-        }
-        .camera-device-picker[hidden] { display: none; }
-        .camera-device-picker select {
-            max-width: min(100%, 320px);
-            min-height: 40px;
-            padding: 0 12px;
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            border-radius: 8px;
-            background: rgba(12, 16, 14, 0.78);
-            color: #fff;
-            pointer-events: auto;
-        }
-        .camera-device-label {
-            margin: 0;
-            color: #fff;
-            font-size: 12px;
-            text-align: center;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
-        }
-        .camera-device-label:empty { display: none; }
         .top-action {
             width: 46px;
             height: 46px;
@@ -354,12 +519,18 @@
             gap: 12px;
             padding: 18px 16px max(22px, env(safe-area-inset-bottom));
             background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
+            touch-action: none;
         }
         .status {
             position: absolute;
             bottom: calc(100% + 8px);
             left: 16px;
             right: 16px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
             color: #fff;
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
         }
@@ -398,28 +569,7 @@
             color: #fff;
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
         }
-        .future-carousels {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: min(100%, 360px);
-            min-height: 36px;
-            color: rgba(255, 255, 255, 0.72);
-            font-size: 11px;
-        }
-        .future-carousel {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 120px;
-            min-height: 32px;
-            padding: 0 12px;
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 999px;
-            background: rgba(12, 16, 14, 0.28);
-            backdrop-filter: blur(8px);
-        }
+        .filter-panel { margin-bottom: 5px; }
         @media (max-height: 560px) {
             .top-bar { padding-top: max(8px, env(safe-area-inset-top)); }
             .bottom-controls { gap: 7px; padding-top: 10px; }
@@ -444,16 +594,22 @@
             </div>
         </header>
 
-        <div id="camera-device-picker" class="camera-device-picker" hidden>
-            <label class="visually-hidden" for="camera-device-select">Select camera lens</label>
-            <select id="camera-device-select" aria-label="Select camera lens" disabled></select>
-            <p id="camera-device-label" class="camera-device-label" aria-live="polite"></p>
-        </div>
-
         <main class="camera-region">
             <section id="camera-frame" class="camera-frame" aria-label="Camera preview">
                 <video id="camera-video" autoplay playsinline muted aria-label="Live camera preview"></video>
                 <img id="photo-preview" alt="Your captured wedding photo">
+                <div id="story-frame" class="story-frame" data-frame="wedding-classic" aria-hidden="true">
+                    <div class="frame-border"></div>
+                    <span class="frame-corner top-left">❧</span>
+                    <span class="frame-corner top-right">❧</span>
+                    <span class="frame-corner bottom-left">❧</span>
+                    <span class="frame-corner bottom-right">❧</span>
+                    <span id="frame-title" class="frame-title">Wedding Classic</span>
+                    <div class="frame-brand">
+                        <span>LY Chhun Y ♥ Loeung Sovisal</span>
+                        <small>18 January 2027</small>
+                    </div>
+                </div>
                 <div id="camera-state" class="camera-state" role="status" aria-live="polite">
                     <span id="loading-spinner" class="state-spinner" aria-hidden="true"></span>
                     <p id="state-message" class="state-message">Starting your camera…</p>
@@ -461,9 +617,20 @@
                 </div>
             </section>
         </main>
+        <div id="zoom-chips" class="zoom-chips" aria-label="Camera zoom" hidden></div>
 
         <footer class="bottom-controls">
             <p id="camera-status" class="status" role="status" aria-live="polite">Starting your camera…</p>
+            <section id="filter-panel" class="filter-panel" aria-label="Camera filters" hidden>
+                <p id="filter-current" class="filter-current">Original</p>
+                <div id="filter-selector" class="filter-selector">
+                    <button class="filter-option" type="button" data-filter="original" aria-pressed="true">Original</button>
+                    <button class="filter-option" type="button" data-filter="golden-romance" aria-pressed="false">Golden Romance</button>
+                    <button class="filter-option" type="button" data-filter="emerald-garden" aria-pressed="false">Emerald Garden</button>
+                    <button class="filter-option" type="button" data-filter="soft-sunset" aria-pressed="false">Soft Sunset</button>
+                    <button class="filter-option" type="button" data-filter="classic-wedding" aria-pressed="false">Classic Wedding</button>
+                </div>
+            </section>
             <button id="capture-button" class="capture-button" type="button" aria-label="Capture photo" disabled>
                 <span class="visually-hidden">Capture photo</span>
             </button>
@@ -472,10 +639,6 @@
                 <button id="accept-button" class="photo-action accept" type="button">Use Photo</button>
             </div>
             <p id="accepted-message" class="accepted-message" role="status" hidden>Photo accepted and saved temporarily in memory.</p>
-            <div id="future-carousels" class="future-carousels" aria-label="Future camera features">
-                <span class="future-carousel">Filters · Coming soon</span>
-                <span class="future-carousel">Frames · Coming soon</span>
-            </div>
         </footer>
     </div>
     <canvas id="capture-canvas" class="visually-hidden" aria-hidden="true"></canvas>
@@ -497,9 +660,13 @@
         const acceptButton = document.getElementById('accept-button');
         const acceptedMessage = document.getElementById('accepted-message');
         const canvas = document.getElementById('capture-canvas');
-        const devicePicker = document.getElementById('camera-device-picker');
-        const deviceSelect = document.getElementById('camera-device-select');
-        const selectedCameraLabel = document.getElementById('camera-device-label');
+        const zoomChips = document.getElementById('zoom-chips');
+        const filterPanel = document.getElementById('filter-panel');
+        const filterSelector = document.getElementById('filter-selector');
+        const filterCurrent = document.getElementById('filter-current');
+        const storyFrame = document.getElementById('story-frame');
+        const frameTitle = document.getElementById('frame-title');
+        const frameCorners = [...storyFrame.querySelectorAll('.frame-corner')];
 
         let stream = null;
         let facingMode = 'environment';
@@ -508,7 +675,38 @@
         let acceptedPhoto = null;
         let previewUrl = null;
         let flashEnabled = false;
-        let availableCameras = [];
+        let selectedFrameIndex = 0;
+        let selectedFilter = 'original';
+        let zoomValue = 1;
+        let zoomRange = { min: 1, max: 5 };
+        let nativeZoomSupported = false;
+        let zoomUpdateVersion = 0;
+        let zoomUpdateRunning = false;
+        let gesturePointers = new Map();
+        let gestureStart = null;
+        let pinchDistanceStart = 0;
+        let pinchZoomStart = 1;
+        let gestureWasPinch = false;
+        let filterGesturePointers = new Map();
+        let filterGestureCancelled = false;
+        let suppressFilterClick = false;
+        let filterScrollFrame = 0;
+
+        const frames = [
+            { id: 'wedding-classic', name: 'Wedding Classic', glyph: '❧', color: '#f3dda5' },
+            { id: 'khmer-luxury', name: 'Khmer Luxury', glyph: '❖', color: '#f4d378' },
+            { id: 'emerald-garden', name: 'Emerald Garden', glyph: '❧', color: '#d8e6bf' },
+            { id: 'cartoon-couple', name: 'Cartoon Couple', glyph: '♡', color: '#ffe4df' },
+            { id: 'retro-film', name: 'Retro Film', glyph: '✦', color: '#fff0cb' }
+        ];
+        const filters = [
+            { id: 'original', name: 'Original', css: 'none' },
+            { id: 'golden-romance', name: 'Golden Romance', css: 'sepia(0.2) saturate(1.2) brightness(1.04)' },
+            { id: 'emerald-garden', name: 'Emerald Garden', css: 'saturate(0.84) hue-rotate(8deg) contrast(1.04)' },
+            { id: 'soft-sunset', name: 'Soft Sunset', css: 'sepia(0.15) saturate(1.14) brightness(1.06)' },
+            { id: 'classic-wedding', name: 'Classic Wedding', css: 'saturate(0.72) contrast(1.07) brightness(1.03)' }
+        ];
+        const zoomPresets = [0.5, 1, 2, 5];
 
         function stopStream(mediaStream) {
             if (mediaStream) {
@@ -552,6 +750,8 @@
             flipButton.disabled = false;
             status.textContent = 'Camera ready';
             updateFlashSupport();
+            configureZoom();
+            setCameraControlsVisible(true);
         }
 
         function getCameraEnvironmentError() {
@@ -621,93 +821,230 @@
             };
         }
 
-        function getLensHint(deviceLabel) {
-            const label = deviceLabel.toLowerCase();
-            if (/ultra[\s-]?wide|ultrawide/.test(label)) {
-                return 'ultra-wide (based on device label)';
-            }
-            if (/telephoto|tele[\s-]?photo|periscope/.test(label)) {
-                return 'telephoto (based on device label)';
-            }
-            if (/\bwide\b/.test(label)) {
-                return 'wide (based on device label)';
-            }
-            return 'not identified by the browser-provided label';
+        function setFrame(index) {
+            selectedFrameIndex = (index + frames.length) % frames.length;
+            const selected = frames[selectedFrameIndex];
+            storyFrame.classList.add('frame-changing');
+            storyFrame.dataset.frame = selected.id;
+            frameTitle.textContent = selected.name;
+            frameCorners.forEach(corner => { corner.textContent = selected.glyph; });
+            window.setTimeout(() => storyFrame.classList.remove('frame-changing'), 160);
         }
 
-        async function logCameraDiagnostics(mediaStream, requestedFacingMode) {
-            try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                const track = mediaStream.getVideoTracks()[0];
-                const settings = track?.getSettings?.() || {};
-                const selectedDeviceId = settings.deviceId || '';
-                const selectedDevice = videoDevices.find(device => device.deviceId === selectedDeviceId);
-                const selectedLabel = selectedDevice?.label || '';
-                let capabilities = {};
+        function stepFrame(direction) {
+            setFrame(selectedFrameIndex + direction);
+        }
 
-                try {
-                    capabilities = track?.getCapabilities?.() || {};
-                } catch (error) {
-                    console.warn('Camera diagnostics: could not read track capabilities.', error);
+        function setFilter(filterId) {
+            const selected = filters.find(filter => filter.id === filterId);
+            if (!selected) {
+                return;
+            }
+            selectedFilter = selected.id;
+            frame.dataset.filter = selected.id;
+            filterCurrent.textContent = selected.name;
+            filterSelector.querySelectorAll('.filter-option').forEach(button => {
+                const isSelected = button.dataset.filter === selected.id;
+                button.setAttribute('aria-pressed', String(isSelected));
+                if (isSelected) {
+                    const selectorRect = filterSelector.getBoundingClientRect();
+                    const buttonRect = button.getBoundingClientRect();
+                    filterSelector.scrollTo({
+                        left: filterSelector.scrollLeft + buttonRect.left - selectorRect.left
+                            - (selectorRect.width - buttonRect.width) / 2,
+                        behavior: 'smooth'
+                    });
                 }
-
-                console.group(`Camera diagnostics — requested ${requestedFacingMode} camera`);
-                console.table(videoDevices.map((device, index) => ({
-                    index,
-                    selected: Boolean(selectedDeviceId && device.deviceId === selectedDeviceId),
-                    label: device.label || '(browser did not provide a label)',
-                    deviceId: device.deviceId || '(browser did not provide an ID)'
-                })));
-                console.info('Selected camera', {
-                    requestedFacingMode,
-                    reportedFacingMode: settings.facingMode || '(not reported)',
-                    selectedDeviceLabel: selectedLabel || '(could not match track device ID to an enumerated label)',
-                    selectedDeviceId: selectedDeviceId || '(not reported)',
-                    trackResolution: settings.width && settings.height
-                        ? `${settings.width}x${settings.height}`
-                        : '(not reported)',
-                    zoomCapability: capabilities.zoom || '(not reported)',
-                    lensHint: getLensHint(selectedLabel)
-                });
-                console.info('Lens type is inferred only from the browser-provided label; a generic label cannot distinguish wide, ultra-wide, or telephoto hardware.');
-                console.groupEnd();
-                return videoDevices;
-            } catch (error) {
-                console.warn('Camera diagnostics: could not enumerate video input devices after permission was granted.', error);
-                return [];
-            }
-        }
-
-        function updateCameraDevicePicker(devices, mediaStream) {
-            availableCameras = devices;
-            const track = mediaStream.getVideoTracks()[0];
-            const selectedDeviceId = track?.getSettings?.().deviceId || '';
-            const selectedDevice = devices.find(device => device.deviceId === selectedDeviceId);
-
-            deviceSelect.replaceChildren();
-            devices.forEach((device, index) => {
-                const option = document.createElement('option');
-                option.value = device.deviceId;
-                option.textContent = device.label || `Camera ${index + 1} (label unavailable)`;
-                deviceSelect.appendChild(option);
             });
-
-            devicePicker.hidden = devices.length === 0;
-            deviceSelect.disabled = devices.length < 2 || !selectedDeviceId;
-            if (selectedDeviceId && devices.some(device => device.deviceId === selectedDeviceId)) {
-                deviceSelect.value = selectedDeviceId;
-            }
-            selectedCameraLabel.textContent = selectedDevice?.label
-                ? `Selected camera: ${selectedDevice.label}`
-                : track?.label
-                    ? `Selected camera: ${track.label}`
-                    : selectedDeviceId
-                        ? 'Selected camera label is not available in this browser.'
-                        : 'The browser did not report the selected camera ID.';
         }
 
-        async function startCamera(nextFacingMode = facingMode, requestedDeviceId = null) {
+        function updateFilterFromScroll() {
+            if (filterScrollFrame) {
+                return;
+            }
+            filterScrollFrame = requestAnimationFrame(() => {
+                filterScrollFrame = 0;
+                const center = filterSelector.getBoundingClientRect().left + filterSelector.clientWidth / 2;
+                const centeredButton = [...filterSelector.querySelectorAll('.filter-option')]
+                    .sort((a, b) => Math.abs(a.getBoundingClientRect().left + a.offsetWidth / 2 - center)
+                        - Math.abs(b.getBoundingClientRect().left + b.offsetWidth / 2 - center))[0];
+                if (centeredButton && centeredButton.dataset.filter !== selectedFilter) {
+                    setFilter(centeredButton.dataset.filter);
+                }
+            });
+        }
+
+        function getZoomPresets() {
+            const candidates = nativeZoomSupported
+                ? zoomPresets.filter(value => value >= zoomRange.min && value <= zoomRange.max)
+                : [1, 2, 5];
+            const presets = [...candidates];
+            if (!presets.some(value => Math.abs(value - zoomRange.min) < 0.01)) {
+                presets.unshift(zoomRange.min);
+            }
+            return [...new Set(presets)].sort((a, b) => a - b);
+        }
+
+        function renderZoomChips() {
+            const presets = getZoomPresets();
+            zoomChips.replaceChildren();
+            presets.forEach(value => {
+                const button = document.createElement('button');
+                button.className = 'zoom-chip';
+                button.type = 'button';
+                button.textContent = `${Number.isInteger(value) ? value : value.toFixed(1)}x`;
+                button.setAttribute('aria-label', `Set zoom to ${button.textContent}`);
+                button.setAttribute('aria-pressed', String(Math.abs(value - zoomValue) < 0.03));
+                button.addEventListener('click', () => setZoom(value));
+                zoomChips.appendChild(button);
+            });
+            zoomChips.hidden = presets.length < 2;
+        }
+
+        function configureZoom() {
+            const track = stream?.getVideoTracks()[0];
+            let capabilities = {};
+            let settings = {};
+            try {
+                capabilities = track?.getCapabilities?.() || {};
+                settings = track?.getSettings?.() || {};
+            } catch (error) {
+                console.info('Camera zoom capabilities are not available; using digital zoom.', error);
+            }
+            const range = capabilities.zoom;
+            nativeZoomSupported = Boolean(range && typeof range.min === 'number'
+                && typeof range.max === 'number' && range.max > range.min
+                && track && typeof track.applyConstraints === 'function');
+            zoomRange = nativeZoomSupported
+                ? { min: range.min, max: range.max }
+                : { min: 1, max: 5 };
+            zoomValue = nativeZoomSupported && typeof settings.zoom === 'number'
+                ? Math.min(range.max, Math.max(range.min, settings.zoom))
+                : 1;
+            video.style.setProperty('--digital-zoom', '1');
+            renderZoomChips();
+        }
+
+        let zoomUpdateQueue = Promise.resolve();
+
+        function setZoom(value) {
+            zoomValue = Math.max(zoomRange.min, Math.min(zoomRange.max, value));
+            video.style.setProperty('--digital-zoom', nativeZoomSupported ? '1' : String(zoomValue));
+            renderZoomChips();
+            if (!nativeZoomSupported) {
+                return;
+            }
+            const track = stream?.getVideoTracks()[0];
+            if (!track) {
+                return;
+            }
+            const version = ++zoomUpdateVersion;
+            zoomUpdateQueue = zoomUpdateQueue.then(async () => {
+                if (version !== zoomUpdateVersion || track !== stream?.getVideoTracks()[0]) {
+                    return;
+                }
+                try {
+                    await track.applyConstraints({ advanced: [{ zoom: zoomValue }] });
+                } catch (error) {
+                    if (version !== zoomUpdateVersion) {
+                        return;
+                    }
+                    console.info('Hardware zoom is unavailable; using digital zoom instead.', error);
+                    nativeZoomSupported = false;
+                    zoomRange = { min: 1, max: 5 };
+                    zoomValue = Math.max(1, zoomValue);
+                    video.style.setProperty('--digital-zoom', String(zoomValue));
+                    renderZoomChips();
+                }
+            });
+        }
+
+        function setCameraControlsVisible(visible) {
+            zoomChips.hidden = !visible || zoomChips.children.length < 2;
+            filterPanel.hidden = !visible;
+        }
+
+        const gestureSurface = document.querySelector('.app');
+        gestureSurface.addEventListener('pointerdown', event => {
+            gesturePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+            if (gesturePointers.size === 1 && !event.target.closest('button, a, .filter-selector')) {
+                gestureStart = { x: event.clientX, y: event.clientY };
+                gestureWasPinch = false;
+            } else if (gesturePointers.size === 2) {
+                const points = [...gesturePointers.values()];
+                pinchDistanceStart = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+                pinchZoomStart = zoomValue;
+                gestureStart = null;
+                gestureWasPinch = true;
+            }
+        });
+        gestureSurface.addEventListener('pointermove', event => {
+            if (!gesturePointers.has(event.pointerId)) {
+                return;
+            }
+            gesturePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+            if (gesturePointers.size !== 2 || !pinchDistanceStart) {
+                return;
+            }
+            const points = [...gesturePointers.values()];
+            const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+            setZoom(pinchZoomStart * distance / pinchDistanceStart);
+        });
+        const finishGesture = event => {
+            const point = gesturePointers.get(event.pointerId);
+            if (point && gestureStart && !gestureWasPinch && !capturedPhoto) {
+                const deltaX = point.x - gestureStart.x;
+                const deltaY = point.y - gestureStart.y;
+                if (Math.abs(deltaX) > 52 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+                    stepFrame(deltaX < 0 ? 1 : -1);
+                }
+            }
+            gesturePointers.delete(event.pointerId);
+            if (gesturePointers.size === 0) {
+                gestureStart = null;
+                pinchDistanceStart = 0;
+                gestureWasPinch = false;
+            }
+        };
+        gestureSurface.addEventListener('pointerup', finishGesture);
+        gestureSurface.addEventListener('pointercancel', finishGesture);
+        filterSelector.addEventListener('pointerdown', event => {
+            filterGesturePointers.set(event.pointerId, event.clientX);
+            if (filterGesturePointers.size > 1) {
+                filterGestureCancelled = true;
+            }
+        });
+        filterSelector.addEventListener('pointerup', event => {
+            const startX = filterGesturePointers.get(event.pointerId);
+            filterGesturePointers.delete(event.pointerId);
+            if (!filterGestureCancelled && startX !== undefined) {
+                const deltaX = event.clientX - startX;
+                if (Math.abs(deltaX) > 35) {
+                    const selectedIndex = filters.findIndex(filter => filter.id === selectedFilter);
+                    const direction = deltaX < 0 ? 1 : -1;
+                    setFilter(filters[(selectedIndex + direction + filters.length) % filters.length].id);
+                    suppressFilterClick = true;
+                    window.setTimeout(() => { suppressFilterClick = false; }, 0);
+                }
+            }
+            if (filterGesturePointers.size === 0) {
+                filterGestureCancelled = false;
+            }
+        });
+        filterSelector.addEventListener('pointercancel', () => {
+            filterGesturePointers.clear();
+            filterGestureCancelled = false;
+        });
+        filterSelector.addEventListener('scroll', updateFilterFromScroll, { passive: true });
+        filterSelector.querySelectorAll('.filter-option').forEach(button => {
+            button.addEventListener('click', () => {
+                if (!suppressFilterClick) {
+                    setFilter(button.dataset.filter);
+                }
+            });
+        });
+
+        async function startCamera(nextFacingMode = facingMode) {
             const currentRequest = ++requestId;
             const previousStream = stream;
             const previousDeviceId = previousStream?.getVideoTracks()[0]?.getSettings().deviceId;
@@ -717,14 +1054,13 @@
             clearPreviewUrl();
             frame.classList.remove('is-captured');
             captureButton.hidden = false;
-            document.getElementById('future-carousels').hidden = false;
             photoActions.hidden = true;
             acceptedMessage.hidden = true;
             capturedPhoto = null;
             acceptedPhoto = null;
             flashEnabled = false;
             flashButton.setAttribute('aria-pressed', 'false');
-            deviceSelect.disabled = true;
+            setCameraControlsVisible(false);
             setLoading('Starting your camera…');
 
             const environmentError = getCameraEnvironmentError();
@@ -744,14 +1080,12 @@
             try {
                 const constraints = {
                     audio: false,
-                    video: requestedDeviceId
-                        ? { deviceId: { exact: requestedDeviceId } }
-                        : { facingMode: { exact: nextFacingMode } }
+                    video: { facingMode: { exact: nextFacingMode } }
                 };
                 try {
                     requestedStream = await navigator.mediaDevices.getUserMedia(constraints);
                 } catch (error) {
-                    if (requestedDeviceId || !['OverconstrainedError', 'ConstraintNotSatisfiedError', 'NotFoundError'].includes(error.name)) {
+                    if (!['OverconstrainedError', 'ConstraintNotSatisfiedError', 'NotFoundError'].includes(error.name)) {
                         throw error;
                     }
                     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -786,8 +1120,6 @@
                 facingMode = requestedStream.getVideoTracks()[0]?.getSettings?.().facingMode || nextFacingMode;
                 video.classList.toggle('front-camera', facingMode === 'user');
                 video.srcObject = stream;
-                const cameraDevices = await logCameraDiagnostics(requestedStream, facingMode);
-                updateCameraDevicePicker(cameraDevices, requestedStream);
 
                 if (currentRequest !== requestId) {
                     stopStream(requestedStream);
@@ -883,6 +1215,61 @@
             }
         }
 
+        function drawStoryFrame(context, width, height) {
+            const selected = frames[selectedFrameIndex];
+            const scale = Math.min(width, height);
+            const inset = selected.id === 'khmer-luxury' ? scale * 0.022 : scale * 0.03;
+            const color = selected.color;
+
+            context.save();
+            context.strokeStyle = color;
+            context.lineWidth = Math.max(3, scale * (selected.id === 'retro-film' ? 0.018 : 0.007));
+            if (selected.id === 'retro-film') {
+                context.setLineDash([scale * 0.014, scale * 0.009]);
+            }
+            context.strokeRect(inset, inset, width - inset * 2, height - inset * 2);
+            if (selected.id === 'khmer-luxury') {
+                context.setLineDash([]);
+                context.lineWidth = Math.max(2, scale * 0.003);
+                context.strokeRect(inset * 1.55, inset * 1.55, width - inset * 3.1, height - inset * 3.1);
+            }
+            context.setLineDash([]);
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.font = `${Math.max(20, scale * 0.055)}px Georgia, serif`;
+            const cornerOffset = inset + scale * 0.055;
+            [
+                [cornerOffset, cornerOffset],
+                [width - cornerOffset, cornerOffset],
+                [cornerOffset, height - cornerOffset],
+                [width - cornerOffset, height - cornerOffset]
+            ].forEach(([x, y]) => context.fillText(selected.glyph, x, y));
+
+            const brandHeight = height * 0.085;
+            const brandX = width * 0.09;
+            const brandY = height * 0.89;
+            context.fillStyle = selected.id === 'khmer-luxury'
+                ? 'rgba(87, 30, 38, 0.84)'
+                : selected.id === 'emerald-garden'
+                    ? 'rgba(24, 70, 46, 0.82)'
+                    : selected.id === 'cartoon-couple'
+                        ? 'rgba(91, 55, 84, 0.78)'
+                        : selected.id === 'retro-film'
+                            ? 'rgba(60, 43, 32, 0.8)'
+                            : 'rgba(20, 35, 25, 0.76)';
+            context.fillRect(brandX, brandY, width - brandX * 2, brandHeight);
+            context.strokeStyle = color;
+            context.lineWidth = Math.max(2, scale * 0.003);
+            context.strokeRect(brandX, brandY, width - brandX * 2, brandHeight);
+            context.fillStyle = '#fff8e8';
+            context.font = `600 ${Math.max(15, scale * 0.031)}px Georgia, serif`;
+            context.fillText('LY Chhun Y ♥ Loeung Sovisal', width / 2, brandY + brandHeight * 0.39);
+            context.font = `${Math.max(11, scale * 0.019)}px Arial, sans-serif`;
+            context.fillText('18 January 2027', width / 2, brandY + brandHeight * 0.75);
+            context.restore();
+        }
+
         async function capturePhoto() {
             if (!stream || !video.videoWidth || !video.videoHeight || captureButton.disabled) {
                 return;
@@ -900,12 +1287,26 @@
             }
 
             try {
+                const zoom = nativeZoomSupported ? 1 : Math.max(1, zoomValue);
+                const sourceWidth = video.videoWidth / zoom;
+                const sourceHeight = video.videoHeight / zoom;
+                const sourceX = (video.videoWidth - sourceWidth) / 2;
+                const sourceY = (video.videoHeight - sourceHeight) / 2;
+                const activeFilter = filters.find(filter => filter.id === selectedFilter);
                 context.setTransform(1, 0, 0, 1, 0, 0);
-                if (facingMode === 'user') {
-                    context.translate(canvas.width, 0);
-                    context.scale(-1, 1);
+                context.filter = activeFilter?.css || 'none';
+                context.save();
+                try {
+                    if (facingMode === 'user') {
+                        context.translate(canvas.width, 0);
+                        context.scale(-1, 1);
+                    }
+                    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+                } finally {
+                    context.restore();
                 }
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                context.filter = 'none';
+                drawStoryFrame(context, canvas.width, canvas.height);
                 canvas.toBlob(blob => {
                     if (!blob) {
                         status.textContent = 'Could not capture the photo. Please try again.';
@@ -918,7 +1319,7 @@
                     frame.classList.add('is-captured');
                     cameraState.hidden = true;
                     captureButton.hidden = true;
-                    document.getElementById('future-carousels').hidden = true;
+                    setCameraControlsVisible(false);
                     photoActions.hidden = false;
                     acceptedMessage.hidden = true;
                     status.textContent = 'Photo captured. Retake it or use this photo.';
@@ -938,7 +1339,7 @@
             frame.classList.remove('is-captured');
             photoActions.hidden = true;
             captureButton.hidden = false;
-            document.getElementById('future-carousels').hidden = false;
+            setCameraControlsVisible(true);
             acceptedMessage.hidden = true;
             capturedPhoto = null;
             acceptedPhoto = null;
@@ -959,11 +1360,6 @@
 
         captureButton.addEventListener('click', capturePhoto);
         retryButton.addEventListener('click', () => startCamera(facingMode));
-        deviceSelect.addEventListener('change', () => {
-            if (deviceSelect.value && availableCameras.some(device => device.deviceId === deviceSelect.value)) {
-                startCamera(facingMode, deviceSelect.value);
-            }
-        });
         flipButton.addEventListener('click', () => {
             const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
             startCamera(nextFacingMode);
