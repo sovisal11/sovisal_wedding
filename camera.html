@@ -589,6 +589,8 @@
         let suppressZoomClick = false;
         let focusIndicatorTimer = 0;
         let focusRequestVersion = 0;
+        let focusRequestPromise = Promise.resolve();
+        let focusSettledAt = 0;
         let overlayFrameCallbackId = 0;
 
         const weddingStyles = [
@@ -814,6 +816,48 @@
             }
         }
 
+        function logMotionBlurCapabilities(track) {
+            try {
+                const capabilities = track?.getCapabilities?.() || {};
+                const settings = track?.getSettings?.() || {};
+                const supportedConstraints = navigator.mediaDevices?.getSupportedConstraints?.() || {};
+                const stabilizationNames = ['videoStabilization', 'imageStabilization', 'stabilizationMode'];
+                const stabilization = {};
+                stabilizationNames.forEach(name => {
+                    if (name in capabilities || name in settings || name in supportedConstraints) {
+                        stabilization[name] = {
+                            capability: capabilities[name] ?? null,
+                            setting: settings[name] ?? null,
+                            constraintRecognized: supportedConstraints[name] === true
+                        };
+                    }
+                });
+                console.info('Camera motion-blur diagnostics:', {
+                    exposureModeCapabilities: capabilities.exposureMode || [],
+                    exposureModeSetting: settings.exposureMode || null,
+                    exposureTimeRange: capabilities.exposureTime || null,
+                    exposureTimeSetting: settings.exposureTime ?? null,
+                    focusModeCapabilities: capabilities.focusMode || [],
+                    focusModeSetting: settings.focusMode || null,
+                    whiteBalanceModeCapabilities: capabilities.whiteBalanceMode || [],
+                    whiteBalanceModeSetting: settings.whiteBalanceMode || null,
+                    stabilization
+                });
+            } catch (error) {
+                console.info('Camera motion-blur capabilities are unavailable:', error);
+            }
+        }
+
+        function waitForCaptureSettling() {
+            return new Promise(resolve => {
+                const elapsedMs = focusSettledAt ? Date.now() - focusSettledAt : 0;
+                const remainingMs = focusSettledAt
+                    ? Math.max(150, 300 - elapsedMs)
+                    : 150;
+                window.setTimeout(() => resolve(remainingMs), remainingMs);
+            });
+        }
+
         function logCameraQualityDiagnostics(track) {
             try {
                 console.info('Camera track settings:', track.getSettings?.() || {});
@@ -1004,29 +1048,34 @@
             }
 
             if (canApplyConstraints && (support.pointsOfInterestRequestAvailable || focusConstraints.focusMode)) {
-                try {
-                    await track.applyConstraints({ advanced: [focusConstraints] });
-                    console.info('Tap-to-focus request succeeded:', {
-                        success: true,
-                        focusSupported: support.focusModeSupported || support.focusDistanceSupported,
-                        pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
-                        targetedPointRequestAccepted: Boolean(focusConstraints.pointsOfInterest),
-                        acceptedByApplyConstraints: true,
-                        point: focusConstraints.pointsOfInterest?.[0] || null,
-                        focusMode: focusConstraints.focusMode || null
+                focusRequestPromise = track.applyConstraints({ advanced: [focusConstraints] })
+                    .then(() => {
+                        focusSettledAt = Date.now();
+                        console.info('Tap-to-focus request succeeded:', {
+                            success: true,
+                            focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                            pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
+                            targetedPointRequestAccepted: Boolean(focusConstraints.pointsOfInterest),
+                            acceptedByApplyConstraints: true,
+                            point: focusConstraints.pointsOfInterest?.[0] || null,
+                            focusMode: focusConstraints.focusMode || null
+                        });
+                    })
+                    .catch(error => {
+                        focusSettledAt = Date.now();
+                        console.info('Tap-to-focus request failed:', {
+                            success: false,
+                            focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                            pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
+                            targetedPointRequestAccepted: false,
+                            acceptedByApplyConstraints: false,
+                            point: focusConstraints.pointsOfInterest?.[0] || null,
+                            error
+                        });
                     });
-                } catch (error) {
-                    console.info('Tap-to-focus request failed:', {
-                        success: false,
-                        focusSupported: support.focusModeSupported || support.focusDistanceSupported,
-                        pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
-                        targetedPointRequestAccepted: false,
-                        acceptedByApplyConstraints: false,
-                        point: focusConstraints.pointsOfInterest?.[0] || null,
-                        error
-                    });
-                }
+                await focusRequestPromise;
             } else {
+                focusSettledAt = Date.now();
                 console.info('Tap-to-focus is unsupported; showing the focus indicator only.', {
                     focusSupported: support.focusModeSupported || support.focusDistanceSupported,
                     pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
@@ -1182,6 +1231,7 @@
                     await configureContinuousCameraModes(track);
                     logCameraQualityDiagnostics(track);
                     logFocusCapabilities(track);
+                    logMotionBlurCapabilities(track);
                 }
 
                 if (currentRequest !== requestId) {
@@ -1439,29 +1489,70 @@
             resizeWeddingStyleOverlay();
             captureButton.disabled = true;
             status.textContent = 'Capturing photo…';
-            const outputAspect = frame.clientWidth / frame.clientHeight;
-            let sourceWidth = video.videoWidth;
-            let sourceHeight = video.videoHeight;
-            if (sourceWidth / sourceHeight > outputAspect) {
-                sourceWidth = sourceHeight * outputAspect;
-            } else {
-                sourceHeight = sourceWidth / outputAspect;
-            }
-            canvas.width = Math.round(sourceWidth);
-            canvas.height = Math.round(sourceHeight);
-            const context = canvas.getContext('2d');
-            if (!context || !canvas.width || !canvas.height) {
-                status.textContent = 'Could not capture the photo. Please try again.';
-                captureButton.disabled = false;
-                return;
-            }
-
+            let captureSource = video;
+            let sourceBitmap = null;
+            let captureMethod = 'video-canvas-fallback';
             try {
+                await focusRequestPromise;
+                const settleWaitMs = await waitForCaptureSettling();
+                const track = stream.getVideoTracks()[0];
+                const captureSettingsBefore = track?.getSettings?.() || {};
+                console.info('Camera settings immediately before capture:', {
+                    focusMode: captureSettingsBefore.focusMode || null,
+                    exposureMode: captureSettingsBefore.exposureMode || null,
+                    exposureTime: captureSettingsBefore.exposureTime ?? null,
+                    whiteBalanceMode: captureSettingsBefore.whiteBalanceMode || null,
+                    settleWaitMs
+                });
+
+                if (track && typeof ImageCapture === 'function') {
+                    try {
+                        const imageCapture = new ImageCapture(track);
+                        const photoBlob = await imageCapture.takePhoto();
+                        sourceBitmap = await createImageBitmap(photoBlob);
+                        captureSource = sourceBitmap;
+                        captureMethod = 'ImageCapture.takePhoto';
+                        console.info('ImageCapture.takePhoto() succeeded:', {
+                            width: sourceBitmap.width,
+                            height: sourceBitmap.height,
+                            type: photoBlob.type,
+                            bytes: photoBlob.size
+                        });
+                    } catch (error) {
+                        console.info('ImageCapture.takePhoto() unavailable or failed; using video canvas capture:', error);
+                    }
+                } else {
+                    console.info('ImageCapture.takePhoto() is unavailable; using video canvas capture.', {
+                        ImageCaptureAvailable: typeof ImageCapture === 'function',
+                        trackAvailable: Boolean(track)
+                    });
+                }
+
+                const sourceWidthAtCapture = captureSource === video ? video.videoWidth : captureSource.width;
+                const sourceHeightAtCapture = captureSource === video ? video.videoHeight : captureSource.height;
+                if (!sourceWidthAtCapture || !sourceHeightAtCapture) {
+                    throw new Error('The camera returned an empty capture frame.');
+                }
+                const outputAspect = frame.clientWidth / frame.clientHeight;
+                let sourceWidth = sourceWidthAtCapture;
+                let sourceHeight = sourceHeightAtCapture;
+                if (sourceWidth / sourceHeight > outputAspect) {
+                    sourceWidth = sourceHeight * outputAspect;
+                } else {
+                    sourceHeight = sourceWidth / outputAspect;
+                }
+                canvas.width = Math.round(sourceWidth);
+                canvas.height = Math.round(sourceHeight);
+                const context = canvas.getContext('2d');
+                if (!context || !canvas.width || !canvas.height) {
+                    throw new Error('Could not create the photo canvas.');
+                }
+
                 const zoom = nativeZoomSupported ? 1 : Math.max(1, zoomValue);
                 sourceWidth /= zoom;
                 sourceHeight /= zoom;
-                const sourceX = (video.videoWidth - sourceWidth) / 2;
-                const sourceY = (video.videoHeight - sourceHeight) / 2;
+                const sourceX = (sourceWidthAtCapture - sourceWidth) / 2;
+                const sourceY = (sourceHeightAtCapture - sourceHeight) / 2;
                 const captureOverlay = document.createElement('canvas');
                 captureOverlay.width = canvas.width;
                 captureOverlay.height = canvas.height;
@@ -1474,15 +1565,18 @@
                         context.translate(canvas.width, 0);
                         context.scale(-1, 1);
                     }
-                    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+                    context.drawImage(captureSource, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
                 } finally {
                     context.restore();
                 }
                 context.filter = 'none';
                 context.drawImage(captureOverlay, 0, 0);
                 console.info('Camera capture resolution:', {
+                    captureMethod,
                     previewWidth: video.videoWidth,
                     previewHeight: video.videoHeight,
+                    sourceWidth: sourceWidthAtCapture,
+                    sourceHeight: sourceHeightAtCapture,
                     sourceCropWidth: sourceWidth,
                     sourceCropHeight: sourceHeight,
                     zoom,
@@ -1491,6 +1585,10 @@
                     canvasHeight: canvas.height
                 });
                 canvas.toBlob(blob => {
+                    if (sourceBitmap) {
+                        sourceBitmap.close();
+                        sourceBitmap = null;
+                    }
                     if (!blob) {
                         status.textContent = 'Could not capture the photo. Please try again.';
                         captureButton.disabled = false;
@@ -1502,6 +1600,7 @@
                         type: blob.type,
                         bytes: blob.size
                     });
+                    console.info('Camera settings immediately after capture:', track?.getSettings?.() || {});
                     capturedPhoto = blob;
                     previewUrl = URL.createObjectURL(blob);
                     preview.src = previewUrl;
@@ -1514,6 +1613,7 @@
                     status.textContent = 'Photo captured. Retake it or use this photo.';
                 }, 'image/jpeg', 0.98);
             } catch (error) {
+                sourceBitmap?.close();
                 console.error('Photo capture failed:', error);
                 status.textContent = 'Could not capture the photo. Please try again.';
                 captureButton.disabled = false;
