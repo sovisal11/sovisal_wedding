@@ -978,14 +978,61 @@
 
             const focusRequest = ++focusRequestVersion;
             const track = stream.getVideoTracks()[0];
-            try {
-                const focusModes = track.getCapabilities?.().focusMode;
-                if (Array.isArray(focusModes) && focusModes.includes('single-shot')
-                    && typeof track.applyConstraints === 'function') {
-                    await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+            const support = getFocusCapabilities(track);
+            const canApplyConstraints = typeof track.applyConstraints === 'function';
+            const focusConstraints = {};
+            if (support.pointsOfInterestRequestAvailable) {
+                let focusX = x;
+                let focusY = y;
+                const videoAspect = video.videoWidth / video.videoHeight;
+                const frameAspect = frame.clientWidth / frame.clientHeight;
+                if (videoAspect > frameAspect) {
+                    focusX = 0.5 + (x - 0.5) * frameAspect / videoAspect;
+                } else {
+                    focusY = 0.5 + (y - 0.5) * videoAspect / frameAspect;
                 }
-            } catch (error) {
-                console.info('Tap-to-focus is unavailable; showing the focus indicator only.', error);
+                if (facingMode === 'user') {
+                    focusX = 1 - focusX;
+                }
+                focusConstraints.pointsOfInterest = [{
+                    x: Math.max(0, Math.min(1, focusX)),
+                    y: Math.max(0, Math.min(1, focusY))
+                }];
+            }
+            if (support.focusModes.includes('single-shot')) {
+                focusConstraints.focusMode = 'single-shot';
+            }
+
+            if (canApplyConstraints && (support.pointsOfInterestRequestAvailable || focusConstraints.focusMode)) {
+                try {
+                    await track.applyConstraints({ advanced: [focusConstraints] });
+                    console.info('Tap-to-focus request succeeded:', {
+                        success: true,
+                        focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                        pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
+                        targetedPointRequestAccepted: Boolean(focusConstraints.pointsOfInterest),
+                        acceptedByApplyConstraints: true,
+                        point: focusConstraints.pointsOfInterest?.[0] || null,
+                        focusMode: focusConstraints.focusMode || null
+                    });
+                } catch (error) {
+                    console.info('Tap-to-focus request failed:', {
+                        success: false,
+                        focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                        pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
+                        targetedPointRequestAccepted: false,
+                        acceptedByApplyConstraints: false,
+                        point: focusConstraints.pointsOfInterest?.[0] || null,
+                        error
+                    });
+                }
+            } else {
+                console.info('Tap-to-focus is unsupported; showing the focus indicator only.', {
+                    focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                    pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
+                    applyConstraintsAvailable: canApplyConstraints,
+                    focusModes: support.focusModes
+                });
             }
 
             if (focusRequest === focusRequestVersion) {
@@ -1134,6 +1181,7 @@
                 if (track) {
                     await configureContinuousCameraModes(track);
                     logCameraQualityDiagnostics(track);
+                    logFocusCapabilities(track);
                 }
 
                 if (currentRequest !== requestId) {
@@ -1308,6 +1356,60 @@
                 resizeWeddingStyleOverlay();
                 monitorWeddingStyleOverlay();
             });
+        }
+
+        function getFocusCapabilities(track) {
+            try {
+                const capabilities = track?.getCapabilities?.() || {};
+                const focusModes = capabilities.focusMode;
+                const focusDistance = capabilities.focusDistance;
+                let pointsOfInterestConstraintSupported = false;
+                try {
+                    pointsOfInterestConstraintSupported = navigator.mediaDevices
+                        ?.getSupportedConstraints?.().pointsOfInterest === true;
+                } catch (error) {
+                    console.info('Could not read points-of-interest constraint support:', error);
+                }
+                const pointsOfInterestCapabilityListed = Object.prototype.hasOwnProperty.call(capabilities, 'pointsOfInterest');
+                return {
+                    capabilities,
+                    focusModeSupported: Array.isArray(focusModes) && focusModes.length > 0,
+                    focusModes: Array.isArray(focusModes) ? focusModes : [],
+                    focusDistanceSupported: Boolean(focusDistance && typeof focusDistance.min === 'number'
+                        && typeof focusDistance.max === 'number'),
+                    focusDistance: focusDistance || null,
+                    pointsOfInterestCapabilityListed,
+                    pointsOfInterestConstraintSupported,
+                    pointsOfInterestRequestAvailable: pointsOfInterestCapabilityListed || pointsOfInterestConstraintSupported
+                };
+            } catch (error) {
+                console.info('Could not read focus capabilities:', error);
+                return {
+                    capabilities: {},
+                    focusModeSupported: false,
+                    focusModes: [],
+                    focusDistanceSupported: false,
+                    focusDistance: null,
+                    pointsOfInterestCapabilityListed: false,
+                    pointsOfInterestConstraintSupported: false,
+                    pointsOfInterestRequestAvailable: false
+                };
+            }
+        }
+
+        function logFocusCapabilities(track) {
+            const support = getFocusCapabilities(track);
+            console.info('Camera focus support:', {
+                focusSupported: support.focusModeSupported || support.focusDistanceSupported,
+                focusModeSupported: support.focusModeSupported,
+                focusModes: support.focusModes,
+                focusDistanceSupported: support.focusDistanceSupported,
+                focusDistance: support.focusDistance,
+                pointsOfInterestCapabilityListed: support.pointsOfInterestCapabilityListed,
+                pointsOfInterestConstraintSupported: support.pointsOfInterestConstraintSupported,
+                pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable
+            });
+            return support;
         }
 
         function stopWeddingStyleOverlayMonitor() {
