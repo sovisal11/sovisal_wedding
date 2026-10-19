@@ -788,6 +788,41 @@
             renderZoomChips();
         }
 
+        async function configureContinuousCameraModes(track) {
+            if (typeof track?.getCapabilities !== 'function' || typeof track.applyConstraints !== 'function') {
+                return;
+            }
+
+            let capabilities;
+            try {
+                capabilities = track.getCapabilities();
+            } catch (error) {
+                console.info('Could not read camera mode capabilities:', error);
+                return;
+            }
+
+            for (const modeName of ['focusMode', 'exposureMode', 'whiteBalanceMode']) {
+                const modes = capabilities[modeName];
+                if (!Array.isArray(modes) || !modes.includes('continuous')) {
+                    continue;
+                }
+                try {
+                    await track.applyConstraints({ advanced: [{ [modeName]: 'continuous' }] });
+                } catch (error) {
+                    console.info(`Continuous ${modeName} could not be enabled:`, error);
+                }
+            }
+        }
+
+        function logCameraQualityDiagnostics(track) {
+            try {
+                console.info('Camera track settings:', track.getSettings?.() || {});
+                console.info('Camera track capabilities:', track.getCapabilities?.() || {});
+            } catch (error) {
+                console.info('Camera track diagnostics are unavailable:', error);
+            }
+        }
+
         let zoomUpdateQueue = Promise.resolve();
 
         function setZoom(value) {
@@ -1032,7 +1067,11 @@
             try {
                 const constraints = {
                     audio: false,
-                    video: { facingMode: { exact: nextFacingMode } }
+                    video: {
+                        facingMode: { exact: nextFacingMode },
+                        width: { ideal: 3840 },
+                        height: { ideal: 2160 }
+                    }
                 };
                 try {
                     requestedStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1055,12 +1094,24 @@
                         unavailableError.name = 'NotFoundError';
                         throw unavailableError;
                     }
-                    requestedStream = await navigator.mediaDevices.getUserMedia({
-                        audio: false,
-                        video: {
-                            deviceId: { exact: device.deviceId }
+                    try {
+                        requestedStream = await navigator.mediaDevices.getUserMedia({
+                            audio: false,
+                            video: {
+                                deviceId: { exact: device.deviceId },
+                                width: { ideal: 3840 },
+                                height: { ideal: 2160 }
+                            }
+                        });
+                    } catch (error) {
+                        if (!['OverconstrainedError', 'ConstraintNotSatisfiedError'].includes(error.name)) {
+                            throw error;
                         }
-                    });
+                        requestedStream = await navigator.mediaDevices.getUserMedia({
+                            audio: false,
+                            video: { deviceId: { exact: device.deviceId } }
+                        });
+                    }
                 }
 
                 if (currentRequest !== requestId) {
@@ -1069,7 +1120,8 @@
                 }
 
                 stream = requestedStream;
-                facingMode = requestedStream.getVideoTracks()[0]?.getSettings?.().facingMode || nextFacingMode;
+                const track = requestedStream.getVideoTracks()[0];
+                facingMode = track?.getSettings?.().facingMode || nextFacingMode;
                 video.classList.toggle('front-camera', facingMode === 'user');
                 video.srcObject = stream;
 
@@ -1079,6 +1131,10 @@
                 }
 
                 await video.play();
+                if (track) {
+                    await configureContinuousCameraModes(track);
+                    logCameraQualityDiagnostics(track);
+                }
 
                 if (currentRequest !== requestId) {
                     stopStream(requestedStream);
@@ -1169,10 +1225,10 @@
             }
         }
 
-        function drawWeddingStyleOverlay() {
-            const context = styleOverlayContext;
-            const width = styleOverlay.width;
-            const height = styleOverlay.height;
+        function drawWeddingStyleOverlay(targetCanvas = styleOverlay) {
+            const context = targetCanvas === styleOverlay ? styleOverlayContext : targetCanvas.getContext('2d');
+            const width = targetCanvas.width;
+            const height = targetCanvas.height;
             if (!context || !width || !height) {
                 return;
             }
@@ -1281,8 +1337,16 @@
             resizeWeddingStyleOverlay();
             captureButton.disabled = true;
             status.textContent = 'Capturing photo…';
-            canvas.width = styleOverlay.width;
-            canvas.height = styleOverlay.height;
+            const outputAspect = frame.clientWidth / frame.clientHeight;
+            let sourceWidth = video.videoWidth;
+            let sourceHeight = video.videoHeight;
+            if (sourceWidth / sourceHeight > outputAspect) {
+                sourceWidth = sourceHeight * outputAspect;
+            } else {
+                sourceHeight = sourceWidth / outputAspect;
+            }
+            canvas.width = Math.round(sourceWidth);
+            canvas.height = Math.round(sourceHeight);
             const context = canvas.getContext('2d');
             if (!context || !canvas.width || !canvas.height) {
                 status.textContent = 'Could not capture the photo. Please try again.';
@@ -1292,18 +1356,14 @@
 
             try {
                 const zoom = nativeZoomSupported ? 1 : Math.max(1, zoomValue);
-                const outputAspect = canvas.width / canvas.height;
-                let sourceWidth = video.videoWidth;
-                let sourceHeight = video.videoHeight;
-                if (sourceWidth / sourceHeight > outputAspect) {
-                    sourceWidth = sourceHeight * outputAspect;
-                } else {
-                    sourceHeight = sourceWidth / outputAspect;
-                }
                 sourceWidth /= zoom;
                 sourceHeight /= zoom;
                 const sourceX = (video.videoWidth - sourceWidth) / 2;
                 const sourceY = (video.videoHeight - sourceHeight) / 2;
+                const captureOverlay = document.createElement('canvas');
+                captureOverlay.width = canvas.width;
+                captureOverlay.height = canvas.height;
+                drawWeddingStyleOverlay(captureOverlay);
                 context.setTransform(1, 0, 0, 1, 0, 0);
                 context.filter = weddingStyles[selectedStyleIndex].filter;
                 context.save();
@@ -1317,13 +1377,29 @@
                     context.restore();
                 }
                 context.filter = 'none';
-                context.drawImage(styleOverlay, 0, 0, canvas.width, canvas.height);
+                context.drawImage(captureOverlay, 0, 0);
+                console.info('Camera capture resolution:', {
+                    previewWidth: video.videoWidth,
+                    previewHeight: video.videoHeight,
+                    sourceCropWidth: sourceWidth,
+                    sourceCropHeight: sourceHeight,
+                    zoom,
+                    nativeZoomSupported,
+                    canvasWidth: canvas.width,
+                    canvasHeight: canvas.height
+                });
                 canvas.toBlob(blob => {
                     if (!blob) {
                         status.textContent = 'Could not capture the photo. Please try again.';
                         captureButton.disabled = false;
                         return;
                     }
+                    console.info('Exported photo:', {
+                        width: canvas.width,
+                        height: canvas.height,
+                        type: blob.type,
+                        bytes: blob.size
+                    });
                     capturedPhoto = blob;
                     previewUrl = URL.createObjectURL(blob);
                     preview.src = previewUrl;
@@ -1334,7 +1410,7 @@
                     photoActions.hidden = false;
                     acceptedMessage.hidden = true;
                     status.textContent = 'Photo captured. Retake it or use this photo.';
-                }, 'image/jpeg', 0.92);
+                }, 'image/jpeg', 0.98);
             } catch (error) {
                 console.error('Photo capture failed:', error);
                 status.textContent = 'Could not capture the photo. Please try again.';
