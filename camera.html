@@ -108,8 +108,9 @@
             object-position: center;
             background: #050806;
         }
-        .camera-frame video { transform: scale(var(--digital-zoom, 1)); }
-        .camera-frame video.front-camera { transform: scaleX(-1) scale(var(--digital-zoom, 1)); }
+        .camera-frame video {
+            transform: scaleX(var(--preview-mirror, 1)) scale(var(--preview-zoom, 1));
+        }
         .camera-frame img { display: none; }
         .camera-frame.is-captured video { display: none; }
         .camera-frame.is-captured img { display: block; }
@@ -720,9 +721,26 @@
         function setWeddingStyle(index) {
             selectedStyleIndex = (index + weddingStyles.length) % weddingStyles.length;
             const selected = weddingStyles[selectedStyleIndex];
-            video.style.filter = selected.filter;
+            updateVideoPresentation();
             weddingStyleLabel.textContent = selected.name;
             drawWeddingStyleOverlay();
+        }
+
+        function getCameraComposition() {
+            return {
+                mirrored: facingMode === 'user',
+                zoom: nativeZoomSupported ? 1 : Math.max(1, zoomValue),
+                filter: weddingStyles[selectedStyleIndex].filter,
+                frameWidth: frame.clientWidth,
+                frameHeight: frame.clientHeight
+            };
+        }
+
+        function updateVideoPresentation() {
+            const composition = getCameraComposition();
+            video.style.setProperty('--preview-mirror', composition.mirrored ? '-1' : '1');
+            video.style.setProperty('--preview-zoom', String(composition.zoom));
+            video.style.filter = composition.filter;
         }
 
         function stepWeddingStyle(direction) {
@@ -784,7 +802,7 @@
             zoomValue = nativeZoomSupported && typeof settings.zoom === 'number'
                 ? Math.min(range.max, Math.max(range.min, settings.zoom))
                 : 1;
-            video.style.setProperty('--digital-zoom', '1');
+            updateVideoPresentation();
             renderZoomChips();
         }
 
@@ -859,7 +877,7 @@
 
         function setZoom(value) {
             zoomValue = Math.max(zoomRange.min, Math.min(zoomRange.max, value));
-            video.style.setProperty('--digital-zoom', nativeZoomSupported ? '1' : String(zoomValue));
+            updateVideoPresentation();
             renderZoomChips();
             if (!nativeZoomSupported) {
                 return;
@@ -883,7 +901,7 @@
                     nativeZoomSupported = false;
                     zoomRange = { min: 1, max: 5 };
                     zoomValue = Math.max(1, zoomValue);
-                    video.style.setProperty('--digital-zoom', String(zoomValue));
+                    updateVideoPresentation();
                     renderZoomChips();
                 }
             });
@@ -1187,7 +1205,7 @@
                 stream = requestedStream;
                 const track = requestedStream.getVideoTracks()[0];
                 facingMode = track?.getSettings?.().facingMode || nextFacingMode;
-                video.classList.toggle('front-camera', facingMode === 'user');
+                updateVideoPresentation();
                 video.srcObject = stream;
 
                 if (currentRequest !== requestId) {
@@ -1460,9 +1478,6 @@
             resizeWeddingStyleOverlay();
             captureButton.disabled = true;
             status.textContent = 'Capturing photo…';
-            let captureSource = video;
-            let sourceBitmap = null;
-            let captureMethod = 'video-canvas-fallback';
             try {
                 const track = stream.getVideoTracks()[0];
                 const captureSettingsBefore = track?.getSettings?.() || {};
@@ -1473,42 +1488,20 @@
                     whiteBalanceMode: captureSettingsBefore.whiteBalanceMode || null
                 });
 
-                if (track && typeof ImageCapture === 'function') {
-                    try {
-                        const imageCapture = new ImageCapture(track);
-                        const photoBlob = await imageCapture.takePhoto();
-                        sourceBitmap = await createImageBitmap(photoBlob);
-                        captureSource = sourceBitmap;
-                        captureMethod = 'ImageCapture.takePhoto';
-                        console.info('ImageCapture.takePhoto() succeeded:', {
-                            width: sourceBitmap.width,
-                            height: sourceBitmap.height,
-                            type: photoBlob.type,
-                            bytes: photoBlob.size
-                        });
-                    } catch (error) {
-                        console.info('ImageCapture.takePhoto() unavailable or failed; using video canvas capture:', error);
-                    }
-                } else {
-                    console.info('ImageCapture.takePhoto() is unavailable; using video canvas capture.', {
-                        ImageCaptureAvailable: typeof ImageCapture === 'function',
-                        trackAvailable: Boolean(track)
-                    });
-                }
-
-                const sourceWidthAtCapture = captureSource === video ? video.videoWidth : captureSource.width;
-                const sourceHeightAtCapture = captureSource === video ? video.videoHeight : captureSource.height;
+                const composition = getCameraComposition();
+                const sourceWidthAtCapture = video.videoWidth;
+                const sourceHeightAtCapture = video.videoHeight;
                 if (!sourceWidthAtCapture || !sourceHeightAtCapture) {
                     throw new Error('The camera returned an empty capture frame.');
                 }
-                const outputAspect = frame.clientWidth / frame.clientHeight;
-                let sourceWidth = sourceWidthAtCapture;
-                let sourceHeight = sourceHeightAtCapture;
-                if (sourceWidth / sourceHeight > outputAspect) {
-                    sourceWidth = sourceHeight * outputAspect;
-                } else {
-                    sourceHeight = sourceWidth / outputAspect;
-                }
+                const coverScale = Math.max(
+                    composition.frameWidth / sourceWidthAtCapture,
+                    composition.frameHeight / sourceHeightAtCapture
+                );
+                const sourceWidth = composition.frameWidth / coverScale / composition.zoom;
+                const sourceHeight = composition.frameHeight / coverScale / composition.zoom;
+                const sourceX = (sourceWidthAtCapture - sourceWidth) / 2;
+                const sourceY = (sourceHeightAtCapture - sourceHeight) / 2;
                 canvas.width = Math.round(sourceWidth);
                 canvas.height = Math.round(sourceHeight);
                 const context = canvas.getContext('2d');
@@ -1516,47 +1509,38 @@
                     throw new Error('Could not create the photo canvas.');
                 }
 
-                const zoom = nativeZoomSupported ? 1 : Math.max(1, zoomValue);
-                sourceWidth /= zoom;
-                sourceHeight /= zoom;
-                const sourceX = (sourceWidthAtCapture - sourceWidth) / 2;
-                const sourceY = (sourceHeightAtCapture - sourceHeight) / 2;
                 const captureOverlay = document.createElement('canvas');
                 captureOverlay.width = canvas.width;
                 captureOverlay.height = canvas.height;
                 drawWeddingStyleOverlay(captureOverlay);
-                context.setTransform(1, 0, 0, 1, 0, 0);
-                context.filter = weddingStyles[selectedStyleIndex].filter;
+                context.filter = composition.filter;
                 context.save();
                 try {
-                    if (facingMode === 'user') {
+                    if (composition.mirrored) {
                         context.translate(canvas.width, 0);
                         context.scale(-1, 1);
                     }
-                    context.drawImage(captureSource, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+                    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
                 } finally {
                     context.restore();
                 }
                 context.filter = 'none';
                 context.drawImage(captureOverlay, 0, 0);
                 console.info('Camera capture resolution:', {
-                    captureMethod,
+                    captureMethod: 'video-preview-frame',
                     previewWidth: video.videoWidth,
                     previewHeight: video.videoHeight,
                     sourceWidth: sourceWidthAtCapture,
                     sourceHeight: sourceHeightAtCapture,
                     sourceCropWidth: sourceWidth,
                     sourceCropHeight: sourceHeight,
-                    zoom,
+                    zoom: composition.zoom,
+                    mirrored: composition.mirrored,
                     nativeZoomSupported,
                     canvasWidth: canvas.width,
                     canvasHeight: canvas.height
                 });
                 canvas.toBlob(blob => {
-                    if (sourceBitmap) {
-                        sourceBitmap.close();
-                        sourceBitmap = null;
-                    }
                     if (!blob) {
                         status.textContent = 'Could not capture the photo. Please try again.';
                         captureButton.disabled = false;
@@ -1581,7 +1565,6 @@
                     status.textContent = 'Photo captured. Retake it or use this photo.';
                 }, 'image/jpeg', 0.98);
             } catch (error) {
-                sourceBitmap?.close();
                 console.error('Photo capture failed:', error);
                 status.textContent = 'Could not capture the photo. Please try again.';
                 captureButton.disabled = false;
