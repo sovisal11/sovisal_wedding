@@ -357,13 +357,45 @@
             gap: 14px;
             min-height: 0;
         }
+        .gallery-image-stage {
+            position: relative;
+            display: flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            width: min(100%, 860px);
+            min-height: 0;
+        }
         .gallery-detail img {
             display: block;
-            max-width: min(100%, 720px);
-            max-height: 65vh;
+            max-width: min(calc(100% - 76px), 720px);
+            max-height: 100%;
             object-fit: contain;
             border-radius: 8px;
         }
+        .gallery-nav-cue {
+            position: absolute;
+            top: 50%;
+            z-index: 1;
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 58px;
+            color: rgba(255, 255, 255, 0.92);
+            opacity: 0.34;
+            pointer-events: none;
+            transform: translateY(-50%);
+            transition: opacity 240ms ease;
+            filter: drop-shadow(0 1px 5px rgba(0, 0, 0, 0.36));
+        }
+        .gallery-nav-cue.previous { left: 4px; }
+        .gallery-nav-cue.next { right: 4px; }
+        .gallery-nav-cue svg {
+            width: 24px;
+            height: 24px;
+            overflow: visible;
+        }
+        .gallery-detail.is-interacting .gallery-nav-cue { opacity: 0.82; }
         .gallery-detail { touch-action: pan-y; }
         .gallery-detail-meta {
             margin: 0;
@@ -663,7 +695,15 @@
             <p id="gallery-empty" class="gallery-empty">Photos you send will appear here.</p>
             <div id="gallery-list" class="gallery-list"></div>
             <div id="gallery-detail" class="gallery-detail" hidden>
-                <img id="gallery-detail-image" alt="">
+                <div id="gallery-image-stage" class="gallery-image-stage">
+                    <span id="gallery-previous-cue" class="gallery-nav-cue previous" aria-hidden="true" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </span>
+                    <img id="gallery-detail-image" alt="">
+                    <span id="gallery-next-cue" class="gallery-nav-cue next" aria-hidden="true" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                </div>
                 <p id="gallery-detail-meta" class="gallery-detail-meta"></p>
                 <div class="gallery-detail-actions">
                     <button id="gallery-download" class="photo-action" type="button">Download</button>
@@ -698,6 +738,8 @@
         const galleryEmpty = document.getElementById('gallery-empty');
         const galleryList = document.getElementById('gallery-list');
         const galleryDetail = document.getElementById('gallery-detail');
+        const galleryPreviousCue = document.getElementById('gallery-previous-cue');
+        const galleryNextCue = document.getElementById('gallery-next-cue');
         const galleryDetailImage = document.getElementById('gallery-detail-image');
         const galleryDetailMeta = document.getElementById('gallery-detail-meta');
         const galleryDownloadButton = document.getElementById('gallery-download');
@@ -718,6 +760,7 @@
         let nextCaptureOrder = 1;
         let galleryDatabasePromise = null;
         let galleryPointerStart = null;
+        let galleryCueTimer = 0;
         const galleryReadyPromise = restoreSessionGallery().then(() => true).catch(error => {
             console.error('Sent photo gallery could not be restored:', error);
             status.textContent = 'Saved photos could not be loaded. Reload the camera to try again.';
@@ -1253,6 +1296,9 @@
                 return;
             }
             activeGalleryPhotoId = photo.id;
+            const photoIndex = sessionGallery.findIndex(item => item.id === photo.id);
+            galleryPreviousCue.hidden = photoIndex <= 0;
+            galleryNextCue.hidden = photoIndex < 0 || photoIndex >= sessionGallery.length - 1;
             galleryList.hidden = true;
             galleryEmpty.hidden = true;
             galleryDetail.hidden = false;
@@ -1262,6 +1308,14 @@
             galleryDetailImage.alt = `Sent photo ${photo.order}`;
             galleryDetailMeta.textContent = `Photo ${photo.order} · ${photo.capturedAt.toLocaleString()}`;
             galleryDialog.classList.add('is-viewing-photo');
+        }
+
+        function showGalleryNavigationCues() {
+            galleryDetail.classList.add('is-interacting');
+            window.clearTimeout(galleryCueTimer);
+            galleryCueTimer = window.setTimeout(() => {
+                galleryDetail.classList.remove('is-interacting');
+            }, 900);
         }
 
         function closeSessionGallery() {
@@ -1304,6 +1358,7 @@
                 return;
             }
             galleryPointerStart = { x: event.clientX, y: event.clientY };
+            showGalleryNavigationCues();
         });
         galleryDetail.addEventListener('pointerup', event => {
             if (!galleryPointerStart) {
@@ -1315,6 +1370,7 @@
             if (Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
                 browseGalleryPhoto(deltaX < 0 ? 1 : -1);
             }
+            showGalleryNavigationCues();
         });
         galleryDetail.addEventListener('pointercancel', () => { galleryPointerStart = null; });
 
