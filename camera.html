@@ -240,27 +240,18 @@
             background: rgba(8, 21, 14, 0.64);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
-        .gallery-button img {
+        .gallery-button img,
+        .gallery-button svg {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
+        }
+        .gallery-button img {
             object-fit: cover;
         }
         .gallery-button svg {
-            width: 25px;
-            height: 25px;
-        }
-        .gallery-count {
-            position: absolute;
-            right: 2px;
-            bottom: 2px;
-            min-width: 17px;
-            padding: 1px 4px;
-            border-radius: 999px;
-            background: var(--gold);
-            color: #16271d;
-            font-size: 10px;
-            font-weight: 700;
-            line-height: 1.3;
+            padding: 12px;
         }
         .photo-actions { display: flex; gap: 12px; }
         .photo-actions[hidden] { display: none; }
@@ -292,6 +283,7 @@
             touch-action: pan-y;
         }
         .gallery-header {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -299,6 +291,11 @@
             width: min(100%, 720px);
             margin: 0 auto 18px;
         }
+        .gallery-dialog.is-viewing-photo .gallery-back {
+            position: absolute;
+            left: 0;
+        }
+        .gallery-dialog.is-viewing-photo .gallery-header h2 { margin: 0 auto; }
         .gallery-header h2 {
             margin: 0;
             color: var(--ivory);
@@ -367,32 +364,14 @@
             object-fit: contain;
             border-radius: 8px;
         }
-        .gallery-detail img:fullscreen,
-        .gallery-detail img:-webkit-full-screen {
-            width: 100vw;
-            height: 100vh;
-            max-width: 100vw;
-            max-height: 100vh;
-            border-radius: 0;
-            background: #050806;
-        }
+        .gallery-detail { touch-action: pan-y; }
         .gallery-detail-meta {
             margin: 0;
             color: var(--muted);
             font-size: 13px;
             text-align: center;
         }
-        .gallery-detail-actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-        .gallery-detail-actions .photo-action { min-width: 110px; }
-        .gallery-detail-actions .delete-photo {
-            border-color: rgba(255, 135, 135, 0.7);
-            color: #ffd2d2;
-        }
+        .gallery-detail-actions { display: flex; justify-content: center; gap: 10px; }
         .zoom-chips {
             display: flex;
             align-items: center;
@@ -669,7 +648,6 @@
             <button id="gallery-button" class="gallery-button" type="button" aria-label="Open sent photo gallery" title="Sent photos" hidden>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
                 <img id="gallery-thumbnail" alt="" hidden>
-                <span id="gallery-count" class="gallery-count" hidden></span>
             </button>
             <div id="photo-actions" class="photo-actions" hidden>
                 <button id="retake-button" class="photo-action" type="button">Retake</button>
@@ -678,9 +656,9 @@
         </footer>
         <section id="gallery-dialog" class="gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-heading" hidden>
             <header class="gallery-header">
-                <button id="gallery-back" class="gallery-back" type="button" hidden>Gallery</button>
+                <button id="gallery-back" class="gallery-back" type="button" aria-label="Back to gallery" title="Back" hidden>←</button>
                 <h2 id="gallery-heading">Sent Photos</h2>
-                <button id="gallery-close" class="gallery-close" type="button" aria-label="Close gallery">Close</button>
+                <button id="gallery-close" class="gallery-close" type="button" aria-label="Close gallery" title="Close">✕</button>
             </header>
             <p id="gallery-empty" class="gallery-empty">Photos you send will appear here.</p>
             <div id="gallery-list" class="gallery-list"></div>
@@ -689,8 +667,6 @@
                 <p id="gallery-detail-meta" class="gallery-detail-meta"></p>
                 <div class="gallery-detail-actions">
                     <button id="gallery-download" class="photo-action" type="button">Download</button>
-                    <button id="gallery-fullscreen" class="photo-action" type="button">View Full Screen</button>
-                    <button id="gallery-delete" class="photo-action delete-photo" type="button">Delete</button>
                 </div>
             </div>
         </section>
@@ -715,7 +691,7 @@
         const sendButton = document.getElementById('send-button');
         const galleryButton = document.getElementById('gallery-button');
         const galleryThumbnail = document.getElementById('gallery-thumbnail');
-        const galleryCount = document.getElementById('gallery-count');
+        const galleryIcon = galleryButton.querySelector('svg');
         const galleryDialog = document.getElementById('gallery-dialog');
         const galleryCloseButton = document.getElementById('gallery-close');
         const galleryBackButton = document.getElementById('gallery-back');
@@ -725,8 +701,6 @@
         const galleryDetailImage = document.getElementById('gallery-detail-image');
         const galleryDetailMeta = document.getElementById('gallery-detail-meta');
         const galleryDownloadButton = document.getElementById('gallery-download');
-        const galleryFullscreenButton = document.getElementById('gallery-fullscreen');
-        const galleryDeleteButton = document.getElementById('gallery-delete');
         const canvas = document.getElementById('capture-canvas');
         const zoomChips = document.getElementById('zoom-chips');
         const weddingStyleLabel = document.getElementById('wedding-style-label');
@@ -742,6 +716,13 @@
         const sessionGallery = [];
         let activeGalleryPhotoId = null;
         let nextCaptureOrder = 1;
+        let galleryDatabasePromise = null;
+        let galleryPointerStart = null;
+        const galleryReadyPromise = restoreSessionGallery().then(() => true).catch(error => {
+            console.error('Sent photo gallery could not be restored:', error);
+            status.textContent = 'Saved photos could not be loaded. Reload the camera to try again.';
+            return false;
+        });
         let flashEnabled = false;
         let selectedStyleIndex = 0;
         let zoomValue = 1;
@@ -1134,11 +1115,95 @@
 
         function updateGalleryButton() {
             const latestPhoto = sessionGallery[sessionGallery.length - 1];
+            galleryIcon.hidden = Boolean(latestPhoto);
             galleryThumbnail.hidden = !latestPhoto;
             galleryThumbnail.src = latestPhoto?.thumbnailUrl || '';
-            galleryCount.hidden = sessionGallery.length === 0;
-            galleryCount.textContent = String(sessionGallery.length);
             galleryButton.setAttribute('aria-label', `Open sent photo gallery, ${sessionGallery.length} ${sessionGallery.length === 1 ? 'photo' : 'photos'}`);
+        }
+
+        function openGalleryDatabase() {
+            if (!galleryDatabasePromise) {
+                galleryDatabasePromise = new Promise((resolve, reject) => {
+                    if (!('indexedDB' in window)) {
+                        reject(new Error('IndexedDB is not supported by this browser.'));
+                        return;
+                    }
+                    const request = indexedDB.open('wedding-story-booth', 1);
+                    request.onupgradeneeded = () => {
+                        const database = request.result;
+                        if (!database.objectStoreNames.contains('sent-photos')) {
+                            database.createObjectStore('sent-photos', { keyPath: 'id' });
+                        }
+                    };
+                    request.onsuccess = () => {
+                        const database = request.result;
+                        database.onversionchange = () => database.close();
+                        resolve(database);
+                        navigator.storage?.persist?.().then(persistent => {
+                            if (!persistent) {
+                                console.info('The browser may clear this gallery under storage pressure.');
+                            }
+                        }).catch(error => {
+                            console.info('Persistent browser storage is unavailable:', error);
+                        });
+                    };
+                    request.onerror = () => reject(request.error || new Error('Could not open the photo gallery database.'));
+                    request.onblocked = () => reject(new Error('The photo gallery database is blocked by another open tab.'));
+                });
+            }
+            return galleryDatabasePromise;
+        }
+
+        async function getStoredGalleryPhotos() {
+            const database = await openGalleryDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction('sent-photos', 'readonly');
+                const request = transaction.objectStore('sent-photos').getAll();
+                let photos;
+                request.onsuccess = () => { photos = request.result; };
+                request.onerror = () => reject(request.error || new Error('Could not read saved photos.'));
+                transaction.oncomplete = () => resolve(photos);
+                transaction.onerror = () => reject(transaction.error || new Error('Could not read saved photos.'));
+                transaction.onabort = () => reject(transaction.error || new Error('Reading saved photos was cancelled.'));
+            });
+        }
+
+        async function storeGalleryPhoto(photo) {
+            const database = await openGalleryDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction('sent-photos', 'readwrite');
+                transaction.objectStore('sent-photos').put({
+                    id: photo.id,
+                    order: photo.order,
+                    blob: photo.blob,
+                    capturedAt: photo.capturedAt.toISOString(),
+                    accepted: photo.accepted,
+                    delivery: photo.delivery
+                });
+                transaction.oncomplete = resolve;
+                transaction.onerror = () => reject(transaction.error || new Error('Could not save the photo to this session.'));
+                transaction.onabort = () => reject(transaction.error || new Error('Photo saving was cancelled.'));
+            });
+        }
+
+        async function restoreSessionGallery() {
+            const storedPhotos = await getStoredGalleryPhotos();
+            storedPhotos.sort((left, right) => left.order - right.order);
+            storedPhotos.forEach(storedPhoto => {
+                if (!(storedPhoto.blob instanceof Blob)) {
+                    console.warn('Skipping a saved gallery entry with invalid photo data:', storedPhoto.id);
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(storedPhoto.blob);
+                sessionGallery.push({
+                    ...storedPhoto,
+                    capturedAt: new Date(storedPhoto.capturedAt),
+                    objectUrl,
+                    thumbnailUrl: objectUrl
+                });
+            });
+            nextCaptureOrder = sessionGallery.reduce((nextOrder, photo) => Math.max(nextOrder, photo.order + 1), 1);
+            renderSessionGallery();
         }
 
         function renderSessionGallery() {
@@ -1164,12 +1229,16 @@
             updateGalleryButton();
         }
 
-        function openSessionGallery() {
+        async function openSessionGallery() {
+            if (!await galleryReadyPromise) {
+                return;
+            }
             renderSessionGallery();
             activeGalleryPhotoId = null;
             galleryList.hidden = false;
             galleryDetail.hidden = true;
             galleryBackButton.hidden = true;
+            galleryCloseButton.hidden = false;
             galleryDialog.hidden = false;
             galleryCloseButton.focus();
         }
@@ -1188,60 +1257,99 @@
             galleryEmpty.hidden = true;
             galleryDetail.hidden = false;
             galleryBackButton.hidden = false;
+            galleryCloseButton.hidden = true;
             galleryDetailImage.src = photo.objectUrl;
             galleryDetailImage.alt = `Sent photo ${photo.order}`;
-            galleryDetailMeta.textContent = `Photo ${photo.order} · ${photo.capturedAt.toLocaleString()} · Ready for dashboard and Telegram delivery`;
+            galleryDetailMeta.textContent = `Photo ${photo.order} · ${photo.capturedAt.toLocaleString()}`;
+            galleryDialog.classList.add('is-viewing-photo');
         }
 
         function closeSessionGallery() {
-            galleryDialog.hidden = true;
+            if (!galleryDialog.hidden && !galleryCloseButton.hidden) {
+                galleryDialog.hidden = true;
+                galleryDetailImage.removeAttribute('src');
+                activeGalleryPhotoId = null;
+                galleryDialog.classList.remove('is-viewing-photo');
+                galleryButton.focus();
+            }
+        }
+
+        function returnToSessionGallery() {
+            if (!activeGalleryPhotoId) {
+                return;
+            }
             galleryDetailImage.removeAttribute('src');
             activeGalleryPhotoId = null;
-            galleryButton.focus();
+            galleryDialog.classList.remove('is-viewing-photo');
+            renderSessionGallery();
+            galleryList.hidden = false;
+            galleryDetail.hidden = true;
+            galleryBackButton.hidden = true;
+            galleryCloseButton.hidden = false;
+            galleryDialog.hidden = false;
+            galleryCloseButton.focus();
         }
+
+        function browseGalleryPhoto(direction) {
+            const currentIndex = sessionGallery.findIndex(photo => photo.id === activeGalleryPhotoId);
+            const nextPhoto = sessionGallery[currentIndex + direction];
+            if (nextPhoto) {
+                openGalleryPhoto(nextPhoto.id);
+            }
+        }
+
+        galleryDetail.addEventListener('pointerdown', event => {
+            if (event.target.closest('button')) {
+                galleryPointerStart = null;
+                return;
+            }
+            galleryPointerStart = { x: event.clientX, y: event.clientY };
+        });
+        galleryDetail.addEventListener('pointerup', event => {
+            if (!galleryPointerStart) {
+                return;
+            }
+            const deltaX = event.clientX - galleryPointerStart.x;
+            const deltaY = event.clientY - galleryPointerStart.y;
+            galleryPointerStart = null;
+            if (Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) {
+                browseGalleryPhoto(deltaX < 0 ? 1 : -1);
+            }
+        });
+        galleryDetail.addEventListener('pointercancel', () => { galleryPointerStart = null; });
 
         function downloadGalleryPhoto() {
             const photo = getGalleryPhoto(activeGalleryPhotoId);
             if (!photo) {
                 return;
             }
+            const fileName = `wedding-photo-${photo.order}.jpg`;
+            try {
+                const file = new File([photo.blob], fileName, { type: photo.blob.type || 'image/jpeg' });
+                if (typeof navigator.share === 'function'
+                    && typeof navigator.canShare === 'function'
+                    && navigator.canShare({ files: [file] })) {
+                    navigator.share({ files: [file], title: 'Wedding photo' }).catch(error => {
+                        if (error.name !== 'AbortError') {
+                            console.info('Photo sharing is unavailable; falling back to a file download.', error);
+                            downloadPhotoFile(photo, fileName);
+                        }
+                    });
+                    return;
+                }
+            } catch (error) {
+                console.info('Photo gallery export is unavailable; falling back to a file download.', error);
+            }
+            downloadPhotoFile(photo, fileName);
+        }
+
+        function downloadPhotoFile(photo, fileName) {
             const link = document.createElement('a');
             link.href = photo.objectUrl;
-            link.download = `wedding-photo-${photo.order}.jpg`;
+            link.download = fileName;
             document.body.appendChild(link);
             link.click();
             link.remove();
-        }
-
-        async function viewGalleryPhotoFullscreen() {
-            const requestFullscreen = galleryDetailImage.requestFullscreen
-                || galleryDetailImage.webkitRequestFullscreen;
-            if (typeof requestFullscreen !== 'function') {
-                console.info('Full-screen photo viewing is unavailable in this browser.');
-                return;
-            }
-            try {
-                const result = requestFullscreen.call(galleryDetailImage);
-                await result;
-            } catch (error) {
-                console.info('Full-screen photo viewing was not allowed:', error);
-            }
-        }
-
-        function deleteGalleryPhoto() {
-            const photoIndex = sessionGallery.findIndex(photo => photo.id === activeGalleryPhotoId);
-            if (photoIndex < 0) {
-                return;
-            }
-            const [photo] = sessionGallery.splice(photoIndex, 1);
-            activeGalleryPhotoId = null;
-            galleryDetailImage.removeAttribute('src');
-            galleryDetail.hidden = true;
-            galleryBackButton.hidden = true;
-            renderSessionGallery();
-            galleryList.hidden = false;
-            URL.revokeObjectURL(photo.objectUrl);
-            URL.revokeObjectURL(photo.thumbnailUrl);
         }
 
         function setCameraControlsVisible(visible) {
@@ -1870,26 +1978,43 @@
             captureButton.disabled = false;
         }
 
-        function sendPhoto() {
+        async function sendPhoto() {
             if (!capturedPhoto) {
                 return;
             }
+            sendButton.disabled = true;
             const photoId = window.crypto?.randomUUID?.() || `photo-${Date.now()}-${nextCaptureOrder}`;
-            const objectUrl = URL.createObjectURL(capturedPhoto);
-            const thumbnailUrl = URL.createObjectURL(capturedPhoto);
-            sessionGallery.push({
+            const photo = {
                 id: photoId,
-                order: nextCaptureOrder++,
+                order: nextCaptureOrder,
                 blob: capturedPhoto,
-                objectUrl,
-                thumbnailUrl,
+                objectUrl: '',
+                thumbnailUrl: '',
                 capturedAt: new Date(),
                 accepted: true,
                 delivery: {
                     dashboard: 'pending',
                     telegram: 'pending'
                 }
-            });
+            };
+            try {
+                if (!await galleryReadyPromise) {
+                    status.textContent = 'Saved photos are unavailable. Your photo is still here; retake it or retry later.';
+                    return;
+                }
+                await storeGalleryPhoto(photo);
+            } catch (error) {
+                console.error('Could not save the sent photo to this session:', error);
+                status.textContent = 'Could not save this photo. It is still available to retake or retry.';
+                return;
+            } finally {
+                sendButton.disabled = false;
+            }
+            photo.objectUrl = URL.createObjectURL(photo.blob);
+            photo.thumbnailUrl = photo.objectUrl;
+            sessionGallery.push(photo);
+            nextCaptureOrder++;
+            renderSessionGallery();
             clearPreviewUrl();
             capturedPhoto = null;
             frame.classList.remove('is-captured');
@@ -1903,18 +2028,15 @@
         captureButton.addEventListener('click', capturePhoto);
         galleryButton.addEventListener('click', openSessionGallery);
         galleryCloseButton.addEventListener('click', closeSessionGallery);
-        galleryBackButton.addEventListener('click', openSessionGallery);
+        galleryBackButton.addEventListener('click', returnToSessionGallery);
         galleryDownloadButton.addEventListener('click', downloadGalleryPhoto);
-        galleryFullscreenButton.addEventListener('click', viewGalleryPhotoFullscreen);
-        galleryDeleteButton.addEventListener('click', deleteGalleryPhoto);
-        galleryDialog.addEventListener('click', event => {
-            if (event.target === galleryDialog) {
-                closeSessionGallery();
-            }
-        });
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape' && !galleryDialog.hidden) {
-                closeSessionGallery();
+                if (activeGalleryPhotoId) {
+                    returnToSessionGallery();
+                } else {
+                    closeSessionGallery();
+                }
             }
         });
         retryButton.addEventListener('click', () => startCamera(facingMode));
@@ -1933,11 +2055,6 @@
             stream = null;
             clearPreviewUrl();
             capturedPhoto = null;
-            sessionGallery.forEach(photo => {
-                URL.revokeObjectURL(photo.objectUrl);
-                URL.revokeObjectURL(photo.thumbnailUrl);
-            });
-            sessionGallery.length = 0;
         });
         window.addEventListener('pageshow', event => {
             if (event.persisted && !stream) {
