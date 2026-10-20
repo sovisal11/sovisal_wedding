@@ -427,18 +427,6 @@
             background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), transparent);
             touch-action: none;
         }
-        @media (orientation: landscape) {
-            .app {
-                top: 50%;
-                left: 50%;
-                right: auto;
-                bottom: auto;
-                width: 100vh;
-                height: 100vw;
-                transform: translate(-50%, -50%) rotate(90deg);
-                transform-origin: center;
-            }
-        }
         .status {
             position: absolute;
             bottom: calc(100% + 8px);
@@ -486,12 +474,6 @@
             right: 16px;
             color: #fff;
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
-        }
-        @media (max-height: 560px) {
-            .top-bar { padding-top: max(8px, env(safe-area-inset-top)); }
-            .bottom-controls { gap: 7px; padding-top: 10px; }
-            .capture-button { width: 60px; height: 60px; }
-            .capture-button::after { width: 46px; height: 46px; }
         }
     </style>
 </head>
@@ -994,13 +976,8 @@
             }
 
             const bounds = frame.getBoundingClientRect();
-            const landscape = window.matchMedia('(orientation: landscape)').matches;
-            const localX = landscape
-                ? event.clientY - bounds.top
-                : event.clientX - bounds.left;
-            const localY = landscape
-                ? bounds.width - (event.clientX - bounds.left)
-                : event.clientY - bounds.top;
+            const localX = event.clientX - bounds.left;
+            const localY = event.clientY - bounds.top;
             const x = Math.max(0, Math.min(1, localX / frame.clientWidth));
             const y = Math.max(0, Math.min(1, localY / frame.clientHeight));
             focusIndicator.style.left = `${x * 100}%`;
@@ -1083,9 +1060,8 @@
             if (point && gestureStart && !gestureWasPinch && !capturedPhoto) {
                 const deltaX = point.x - gestureStart.x;
                 const deltaY = point.y - gestureStart.y;
-                const landscape = window.matchMedia('(orientation: landscape)').matches;
-                const styleDelta = landscape ? deltaY : deltaX;
-                const crossDelta = landscape ? deltaX : deltaY;
+                const styleDelta = deltaX;
+                const crossDelta = deltaY;
                 if (Math.abs(styleDelta) > 52 && Math.abs(styleDelta) > Math.abs(crossDelta) * 1.2) {
                     stepWeddingStyle(styleDelta < 0 ? 1 : -1);
                 } else if (Math.hypot(deltaX, deltaY) < 14) {
@@ -1102,18 +1078,8 @@
         gestureSurface.addEventListener('pointerup', finishGesture);
         gestureSurface.addEventListener('pointercancel', finishGesture);
 
-        function lockPortraitOrientation() {
-            if (typeof screen.orientation?.lock !== 'function') {
-                return;
-            }
-            screen.orientation.lock('portrait').catch(error => {
-                console.info('Native portrait orientation lock is unavailable; keeping a portrait-first layout.', error);
-            });
-        }
-
         async function startCamera(nextFacingMode = facingMode) {
             const currentRequest = ++requestId;
-            lockPortraitOrientation();
             const previousStream = stream;
             const previousDeviceId = previousStream?.getVideoTracks()[0]?.getSettings().deviceId;
             stopWeddingStyleOverlayMonitor();
@@ -1655,8 +1621,33 @@
             }
         });
 
+        function enterFullscreenWhenAvailable() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                return;
+            }
+            const app = document.querySelector('.app');
+            if (typeof app?.requestFullscreen !== 'function'
+                && typeof app?.webkitRequestFullscreen !== 'function') {
+                console.info('Fullscreen is unavailable; using the browser viewport.');
+                return;
+            }
+            try {
+                const result = typeof app.requestFullscreen === 'function'
+                    ? app.requestFullscreen({ navigationUI: 'hide' })
+                    : app.webkitRequestFullscreen();
+                result?.catch(error => {
+                    console.info('Automatic fullscreen was not allowed; using the browser viewport.', error);
+                });
+            } catch (error) {
+                console.info('Automatic fullscreen was not allowed; using the browser viewport.', error);
+            }
+        }
+
+        document.addEventListener('pointerdown', enterFullscreenWhenAvailable, { once: true });
+        document.addEventListener('keydown', enterFullscreenWhenAvailable, { once: true });
         resizeWeddingStyleOverlay();
         setWeddingStyle(0);
+        enterFullscreenWhenAvailable();
         startCamera();
     </script>
 </body>
