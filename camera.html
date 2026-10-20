@@ -224,6 +224,44 @@
         }
         .capture-button:active:not(:disabled) { transform: scale(0.94); }
         .capture-button:disabled { cursor: default; opacity: 0.42; }
+        .gallery-button {
+            position: fixed;
+            z-index: 3;
+            bottom: max(22px, env(safe-area-inset-bottom));
+            left: max(18px, env(safe-area-inset-left));
+            display: grid;
+            place-items: center;
+            width: 54px;
+            height: 54px;
+            overflow: hidden;
+            padding: 0;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            background: rgba(8, 21, 14, 0.64);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        .gallery-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .gallery-button svg {
+            width: 25px;
+            height: 25px;
+        }
+        .gallery-count {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            min-width: 17px;
+            padding: 1px 4px;
+            border-radius: 999px;
+            background: var(--gold);
+            color: #16271d;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
         .photo-actions { display: flex; gap: 12px; }
         .photo-actions[hidden] { display: none; }
         .photo-action {
@@ -237,20 +275,124 @@
             font-weight: 600;
         }
         .photo-action:hover { background: rgba(8, 21, 14, 0.68); }
-        .photo-action.accept {
+        .photo-action.primary {
             border-color: var(--gold);
             background: var(--gold);
             color: #16271d;
         }
-        .photo-action.accept:hover { background: #ded3a8; }
-        .accepted-message {
+        .photo-action.primary:hover { background: #ded3a8; }
+        .gallery-dialog {
+            position: fixed;
+            z-index: 10;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+            background: rgba(5, 12, 8, 0.97);
+            touch-action: pan-y;
+        }
+        .gallery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: min(100%, 720px);
+            margin: 0 auto 18px;
+        }
+        .gallery-header h2 {
             margin: 0;
-            color: var(--gold);
-            font-size: 14px;
+            color: var(--ivory);
+            font-size: 19px;
             font-weight: 600;
+        }
+        .gallery-close,
+        .gallery-back {
+            min-width: 44px;
+            min-height: 44px;
+            padding: 0 12px;
+            border: 1px solid rgba(250, 249, 243, 0.35);
+            border-radius: 999px;
+            background: rgba(8, 21, 14, 0.6);
+        }
+        .gallery-empty {
+            margin: auto;
+            color: var(--muted);
             text-align: center;
         }
-        .accepted-message[hidden] { display: none; }
+        .gallery-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            width: min(100%, 720px);
+            margin: 0 auto;
+            overflow: auto;
+            align-content: start;
+            touch-action: pan-y;
+        }
+        .gallery-item {
+            min-width: 0;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(200, 189, 145, 0.55);
+            border-radius: 10px;
+            background: rgba(250, 249, 243, 0.08);
+            color: var(--ivory);
+            text-align: left;
+        }
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: #050806;
+        }
+        .gallery-item span {
+            display: block;
+            padding: 8px;
+            font-size: 12px;
+        }
+        .gallery-detail {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-height: 0;
+        }
+        .gallery-detail img {
+            display: block;
+            max-width: min(100%, 720px);
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        .gallery-detail img:fullscreen,
+        .gallery-detail img:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            background: #050806;
+        }
+        .gallery-detail-meta {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+        .gallery-detail-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .gallery-detail-actions .photo-action { min-width: 110px; }
+        .gallery-detail-actions .delete-photo {
+            border-color: rgba(255, 135, 135, 0.7);
+            color: #ffd2d2;
+        }
         .zoom-chips {
             display: flex;
             align-items: center;
@@ -468,14 +610,6 @@
             background: rgba(15, 18, 16, 0.54);
             backdrop-filter: blur(8px);
         }
-        .accepted-message {
-            position: absolute;
-            bottom: max(38px, env(safe-area-inset-bottom));
-            left: 16px;
-            right: 16px;
-            color: #fff;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
-        }
         @media (orientation: landscape) {
             .capture-button {
                 position: fixed;
@@ -532,12 +666,34 @@
             <button id="capture-button" class="capture-button" type="button" aria-label="Capture photo" disabled>
                 <span class="visually-hidden">Capture photo</span>
             </button>
+            <button id="gallery-button" class="gallery-button" type="button" aria-label="Open sent photo gallery" title="Sent photos" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <img id="gallery-thumbnail" alt="" hidden>
+                <span id="gallery-count" class="gallery-count" hidden></span>
+            </button>
             <div id="photo-actions" class="photo-actions" hidden>
                 <button id="retake-button" class="photo-action" type="button">Retake</button>
-                <button id="accept-button" class="photo-action accept" type="button">Use Photo</button>
+                <button id="send-button" class="photo-action primary" type="button">Send Photo</button>
             </div>
-            <p id="accepted-message" class="accepted-message" role="status" hidden>Photo accepted and saved temporarily in memory.</p>
         </footer>
+        <section id="gallery-dialog" class="gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-heading" hidden>
+            <header class="gallery-header">
+                <button id="gallery-back" class="gallery-back" type="button" hidden>Gallery</button>
+                <h2 id="gallery-heading">Sent Photos</h2>
+                <button id="gallery-close" class="gallery-close" type="button" aria-label="Close gallery">Close</button>
+            </header>
+            <p id="gallery-empty" class="gallery-empty">Photos you send will appear here.</p>
+            <div id="gallery-list" class="gallery-list"></div>
+            <div id="gallery-detail" class="gallery-detail" hidden>
+                <img id="gallery-detail-image" alt="">
+                <p id="gallery-detail-meta" class="gallery-detail-meta"></p>
+                <div class="gallery-detail-actions">
+                    <button id="gallery-download" class="photo-action" type="button">Download</button>
+                    <button id="gallery-fullscreen" class="photo-action" type="button">View Full Screen</button>
+                    <button id="gallery-delete" class="photo-action delete-photo" type="button">Delete</button>
+                </div>
+            </div>
+        </section>
     </div>
     <canvas id="capture-canvas" class="visually-hidden" aria-hidden="true"></canvas>
 
@@ -556,8 +712,21 @@
         const focusIndicator = document.getElementById('focus-indicator');
         const photoActions = document.getElementById('photo-actions');
         const retakeButton = document.getElementById('retake-button');
-        const acceptButton = document.getElementById('accept-button');
-        const acceptedMessage = document.getElementById('accepted-message');
+        const sendButton = document.getElementById('send-button');
+        const galleryButton = document.getElementById('gallery-button');
+        const galleryThumbnail = document.getElementById('gallery-thumbnail');
+        const galleryCount = document.getElementById('gallery-count');
+        const galleryDialog = document.getElementById('gallery-dialog');
+        const galleryCloseButton = document.getElementById('gallery-close');
+        const galleryBackButton = document.getElementById('gallery-back');
+        const galleryEmpty = document.getElementById('gallery-empty');
+        const galleryList = document.getElementById('gallery-list');
+        const galleryDetail = document.getElementById('gallery-detail');
+        const galleryDetailImage = document.getElementById('gallery-detail-image');
+        const galleryDetailMeta = document.getElementById('gallery-detail-meta');
+        const galleryDownloadButton = document.getElementById('gallery-download');
+        const galleryFullscreenButton = document.getElementById('gallery-fullscreen');
+        const galleryDeleteButton = document.getElementById('gallery-delete');
         const canvas = document.getElementById('capture-canvas');
         const zoomChips = document.getElementById('zoom-chips');
         const weddingStyleLabel = document.getElementById('wedding-style-label');
@@ -569,8 +738,10 @@
         let facingMode = 'environment';
         let requestId = 0;
         let capturedPhoto = null;
-        let acceptedPhoto = null;
         let previewUrl = null;
+        const sessionGallery = [];
+        let activeGalleryPhotoId = null;
+        let nextCaptureOrder = 1;
         let flashEnabled = false;
         let selectedStyleIndex = 0;
         let zoomValue = 1;
@@ -961,9 +1132,123 @@
             setZoom(Number(button.dataset.zoom));
         });
 
+        function updateGalleryButton() {
+            const latestPhoto = sessionGallery[sessionGallery.length - 1];
+            galleryThumbnail.hidden = !latestPhoto;
+            galleryThumbnail.src = latestPhoto?.thumbnailUrl || '';
+            galleryCount.hidden = sessionGallery.length === 0;
+            galleryCount.textContent = String(sessionGallery.length);
+            galleryButton.setAttribute('aria-label', `Open sent photo gallery, ${sessionGallery.length} ${sessionGallery.length === 1 ? 'photo' : 'photos'}`);
+        }
+
+        function renderSessionGallery() {
+            galleryList.replaceChildren();
+            sessionGallery.forEach(photo => {
+                const item = document.createElement('button');
+                item.className = 'gallery-item';
+                item.type = 'button';
+                item.setAttribute('aria-label', `View photo ${photo.order}`);
+                item.addEventListener('click', () => openGalleryPhoto(photo.id));
+
+                const image = document.createElement('img');
+                image.src = photo.thumbnailUrl;
+                image.alt = '';
+                image.loading = 'lazy';
+
+                const caption = document.createElement('span');
+                caption.textContent = `Photo ${photo.order}`;
+                item.append(image, caption);
+                galleryList.appendChild(item);
+            });
+            galleryEmpty.hidden = sessionGallery.length > 0;
+            updateGalleryButton();
+        }
+
+        function openSessionGallery() {
+            renderSessionGallery();
+            activeGalleryPhotoId = null;
+            galleryList.hidden = false;
+            galleryDetail.hidden = true;
+            galleryBackButton.hidden = true;
+            galleryDialog.hidden = false;
+            galleryCloseButton.focus();
+        }
+
+        function getGalleryPhoto(photoId) {
+            return sessionGallery.find(photo => photo.id === photoId) || null;
+        }
+
+        function openGalleryPhoto(photoId) {
+            const photo = getGalleryPhoto(photoId);
+            if (!photo) {
+                return;
+            }
+            activeGalleryPhotoId = photo.id;
+            galleryList.hidden = true;
+            galleryEmpty.hidden = true;
+            galleryDetail.hidden = false;
+            galleryBackButton.hidden = false;
+            galleryDetailImage.src = photo.objectUrl;
+            galleryDetailImage.alt = `Sent photo ${photo.order}`;
+            galleryDetailMeta.textContent = `Photo ${photo.order} · ${photo.capturedAt.toLocaleString()} · Ready for dashboard and Telegram delivery`;
+        }
+
+        function closeSessionGallery() {
+            galleryDialog.hidden = true;
+            galleryDetailImage.removeAttribute('src');
+            activeGalleryPhotoId = null;
+            galleryButton.focus();
+        }
+
+        function downloadGalleryPhoto() {
+            const photo = getGalleryPhoto(activeGalleryPhotoId);
+            if (!photo) {
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = photo.objectUrl;
+            link.download = `wedding-photo-${photo.order}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        async function viewGalleryPhotoFullscreen() {
+            const requestFullscreen = galleryDetailImage.requestFullscreen
+                || galleryDetailImage.webkitRequestFullscreen;
+            if (typeof requestFullscreen !== 'function') {
+                console.info('Full-screen photo viewing is unavailable in this browser.');
+                return;
+            }
+            try {
+                const result = requestFullscreen.call(galleryDetailImage);
+                await result;
+            } catch (error) {
+                console.info('Full-screen photo viewing was not allowed:', error);
+            }
+        }
+
+        function deleteGalleryPhoto() {
+            const photoIndex = sessionGallery.findIndex(photo => photo.id === activeGalleryPhotoId);
+            if (photoIndex < 0) {
+                return;
+            }
+            const [photo] = sessionGallery.splice(photoIndex, 1);
+            activeGalleryPhotoId = null;
+            galleryDetailImage.removeAttribute('src');
+            galleryDetail.hidden = true;
+            galleryBackButton.hidden = true;
+            renderSessionGallery();
+            galleryList.hidden = false;
+            URL.revokeObjectURL(photo.objectUrl);
+            URL.revokeObjectURL(photo.thumbnailUrl);
+        }
+
         function setCameraControlsVisible(visible) {
             zoomChips.hidden = !visible || zoomChips.children.length < 2;
             weddingStyleLabel.hidden = !visible;
+            galleryButton.hidden = !visible;
+            updateGalleryButton();
             if (!visible) {
                 window.clearTimeout(styleDiscoveryTimer);
                 styleDiscovery.hidden = true;
@@ -981,6 +1266,9 @@
 
         const gestureSurface = document.querySelector('.app');
         gestureSurface.addEventListener('pointerdown', event => {
+            if (event.target.closest('#gallery-dialog')) {
+                return;
+            }
             gesturePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
             if (gesturePointers.size === 1 && !event.target.closest('button, a')) {
                 gestureStart = { x: event.clientX, y: event.clientY };
@@ -1125,9 +1413,7 @@
             frame.classList.remove('is-captured');
             captureButton.hidden = false;
             photoActions.hidden = true;
-            acceptedMessage.hidden = true;
             capturedPhoto = null;
-            acceptedPhoto = null;
             flashEnabled = false;
             flashButton.setAttribute('aria-pressed', 'false');
             setCameraControlsVisible(false);
@@ -1561,8 +1847,7 @@
                     captureButton.hidden = true;
                     setCameraControlsVisible(false);
                     photoActions.hidden = false;
-                    acceptedMessage.hidden = true;
-                    status.textContent = 'Photo captured. Retake it or use this photo.';
+                    status.textContent = 'Photo captured. Retake or send it.';
                 }, 'image/jpeg', 0.98);
             } catch (error) {
                 console.error('Photo capture failed:', error);
@@ -1579,26 +1864,59 @@
             frame.classList.remove('is-captured');
             photoActions.hidden = true;
             captureButton.hidden = false;
-            setCameraControlsVisible(true);
-            acceptedMessage.hidden = true;
             capturedPhoto = null;
-            acceptedPhoto = null;
+            setCameraControlsVisible(true);
             status.textContent = 'Camera ready';
             captureButton.disabled = false;
         }
 
-        function acceptPhoto() {
+        function sendPhoto() {
             if (!capturedPhoto) {
                 return;
             }
-            acceptedPhoto = capturedPhoto;
+            const photoId = window.crypto?.randomUUID?.() || `photo-${Date.now()}-${nextCaptureOrder}`;
+            const objectUrl = URL.createObjectURL(capturedPhoto);
+            const thumbnailUrl = URL.createObjectURL(capturedPhoto);
+            sessionGallery.push({
+                id: photoId,
+                order: nextCaptureOrder++,
+                blob: capturedPhoto,
+                objectUrl,
+                thumbnailUrl,
+                capturedAt: new Date(),
+                accepted: true,
+                delivery: {
+                    dashboard: 'pending',
+                    telegram: 'pending'
+                }
+            });
+            clearPreviewUrl();
+            capturedPhoto = null;
+            frame.classList.remove('is-captured');
             photoActions.hidden = true;
-            captureButton.hidden = true;
-            acceptedMessage.hidden = false;
-            status.textContent = 'Photo accepted';
+            captureButton.hidden = false;
+            captureButton.disabled = false;
+            setCameraControlsVisible(true);
+            status.textContent = 'Photo added to your session gallery. Ready for another.';
         }
 
         captureButton.addEventListener('click', capturePhoto);
+        galleryButton.addEventListener('click', openSessionGallery);
+        galleryCloseButton.addEventListener('click', closeSessionGallery);
+        galleryBackButton.addEventListener('click', openSessionGallery);
+        galleryDownloadButton.addEventListener('click', downloadGalleryPhoto);
+        galleryFullscreenButton.addEventListener('click', viewGalleryPhotoFullscreen);
+        galleryDeleteButton.addEventListener('click', deleteGalleryPhoto);
+        galleryDialog.addEventListener('click', event => {
+            if (event.target === galleryDialog) {
+                closeSessionGallery();
+            }
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !galleryDialog.hidden) {
+                closeSessionGallery();
+            }
+        });
         retryButton.addEventListener('click', () => startCamera(facingMode));
         flipButton.addEventListener('click', () => {
             const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
@@ -1607,7 +1925,7 @@
         });
         flashButton.addEventListener('click', toggleFlash);
         retakeButton.addEventListener('click', retakePhoto);
-        acceptButton.addEventListener('click', acceptPhoto);
+        sendButton.addEventListener('click', sendPhoto);
         window.addEventListener('pagehide', () => {
             requestId++;
             stopWeddingStyleOverlayMonitor();
@@ -1615,7 +1933,11 @@
             stream = null;
             clearPreviewUrl();
             capturedPhoto = null;
-            acceptedPhoto = null;
+            sessionGallery.forEach(photo => {
+                URL.revokeObjectURL(photo.objectUrl);
+                URL.revokeObjectURL(photo.thumbnailUrl);
+            });
+            sessionGallery.length = 0;
         });
         window.addEventListener('pageshow', event => {
             if (event.persisted && !stream) {
