@@ -590,7 +590,6 @@
         let focusIndicatorTimer = 0;
         let focusRequestVersion = 0;
         let focusRequestPromise = Promise.resolve();
-        let focusSettledAt = 0;
         let overlayFrameCallbackId = 0;
 
         const weddingStyles = [
@@ -848,16 +847,6 @@
             }
         }
 
-        function waitForCaptureSettling() {
-            return new Promise(resolve => {
-                const elapsedMs = focusSettledAt ? Date.now() - focusSettledAt : 0;
-                const remainingMs = focusSettledAt
-                    ? Math.max(150, 300 - elapsedMs)
-                    : 150;
-                window.setTimeout(() => resolve(remainingMs), remainingMs);
-            });
-        }
-
         function logCameraQualityDiagnostics(track) {
             try {
                 console.info('Camera track settings:', track.getSettings?.() || {});
@@ -1050,7 +1039,6 @@
             if (canApplyConstraints && (support.pointsOfInterestRequestAvailable || focusConstraints.focusMode)) {
                 focusRequestPromise = track.applyConstraints({ advanced: [focusConstraints] })
                     .then(() => {
-                        focusSettledAt = Date.now();
                         console.info('Tap-to-focus request succeeded:', {
                             success: true,
                             focusSupported: support.focusModeSupported || support.focusDistanceSupported,
@@ -1062,7 +1050,6 @@
                         });
                     })
                     .catch(error => {
-                        focusSettledAt = Date.now();
                         console.info('Tap-to-focus request failed:', {
                             success: false,
                             focusSupported: support.focusModeSupported || support.focusDistanceSupported,
@@ -1075,7 +1062,6 @@
                     });
                 await focusRequestPromise;
             } else {
-                focusSettledAt = Date.now();
                 console.info('Tap-to-focus is unsupported; showing the focus indicator only.', {
                     focusSupported: support.focusModeSupported || support.focusDistanceSupported,
                     pointsOfInterestRequestAvailable: support.pointsOfInterestRequestAvailable,
@@ -1493,16 +1479,13 @@
             let sourceBitmap = null;
             let captureMethod = 'video-canvas-fallback';
             try {
-                await focusRequestPromise;
-                const settleWaitMs = await waitForCaptureSettling();
                 const track = stream.getVideoTracks()[0];
                 const captureSettingsBefore = track?.getSettings?.() || {};
                 console.info('Camera settings immediately before capture:', {
                     focusMode: captureSettingsBefore.focusMode || null,
                     exposureMode: captureSettingsBefore.exposureMode || null,
                     exposureTime: captureSettingsBefore.exposureTime ?? null,
-                    whiteBalanceMode: captureSettingsBefore.whiteBalanceMode || null,
-                    settleWaitMs
+                    whiteBalanceMode: captureSettingsBefore.whiteBalanceMode || null
                 });
 
                 if (track && typeof ImageCapture === 'function') {
