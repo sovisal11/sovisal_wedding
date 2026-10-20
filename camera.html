@@ -475,6 +475,23 @@
             color: #fff;
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
         }
+        @media (orientation: landscape) {
+            .capture-button {
+                position: fixed;
+                top: calc(50% - 39px);
+                right: max(22px, env(safe-area-inset-right));
+                z-index: 3;
+            }
+            .photo-actions {
+                position: fixed;
+                top: 50%;
+                right: max(22px, env(safe-area-inset-right));
+                bottom: auto;
+                left: auto;
+                flex-direction: column;
+                transform: translateY(-50%);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1313,9 +1330,11 @@
                 [width - cornerOffset, height - cornerOffset]
             ].forEach(([x, y]) => context.fillText(selected.glyph, x, y));
 
-            const brandHeight = height * 0.085;
-            const brandX = width * 0.09;
-            const brandY = height * 0.71;
+            const landscape = width > height;
+            const brandWidth = width * (landscape ? 0.58 : 0.82);
+            const brandHeight = height * (landscape ? 0.18 : 0.085);
+            const brandX = (width - brandWidth) / 2;
+            const brandY = height * (landscape ? 0.67 : 0.71);
             context.fillStyle = selected.id === 'khmer-luxury'
                 ? 'rgba(87, 30, 38, 0.84)'
                 : selected.id === 'emerald-garden'
