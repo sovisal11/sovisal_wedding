@@ -714,6 +714,7 @@
     <canvas id="capture-canvas" class="visually-hidden" aria-hidden="true"></canvas>
 
     <script>
+        const TELEGRAM_UPLOAD_URL = 'https://wedding-flower-3107.sovisalloeung11.workers.dev/upload';
         const video = document.getElementById('camera-video');
         const frame = document.getElementById('camera-frame');
         const preview = document.getElementById('photo-preview');
@@ -754,6 +755,7 @@
         let facingMode = 'environment';
         let requestId = 0;
         let capturedPhoto = null;
+        let capturedMetadata = null;
         let previewUrl = null;
         const sessionGallery = [];
         let activeGalleryPhotoId = null;
@@ -919,6 +921,10 @@
             updateVideoPresentation();
             weddingStyleLabel.textContent = selected.name;
             drawWeddingStyleOverlay();
+        }
+
+        function getPhotoOrientation() {
+            return window.matchMedia('(orientation: landscape)').matches ? 'landscape' : 'portrait';
         }
 
         function getCameraComposition() {
@@ -1963,6 +1969,11 @@
                 captureOverlay.width = canvas.width;
                 captureOverlay.height = canvas.height;
                 drawWeddingStyleOverlay(captureOverlay);
+                const photoMetadata = {
+                    capturedAt: new Date(),
+                    style: weddingStyles[selectedStyleIndex].name,
+                    orientation: getPhotoOrientation()
+                };
                 context.filter = composition.filter;
                 context.save();
                 try {
@@ -2004,6 +2015,7 @@
                     });
                     console.info('Camera settings immediately after capture:', track?.getSettings?.() || {});
                     capturedPhoto = blob;
+                    capturedMetadata = photoMetadata;
                     previewUrl = URL.createObjectURL(blob);
                     preview.src = previewUrl;
                     frame.classList.add('is-captured');
@@ -2029,13 +2041,14 @@
             photoActions.hidden = true;
             captureButton.hidden = false;
             capturedPhoto = null;
+            capturedMetadata = null;
             setCameraControlsVisible(true);
             status.textContent = 'Camera ready';
             captureButton.disabled = false;
         }
 
         async function sendPhoto() {
-            if (!capturedPhoto) {
+            if (!capturedPhoto || !capturedMetadata) {
                 return;
             }
             sendButton.disabled = true;
@@ -2046,7 +2059,9 @@
                 blob: capturedPhoto,
                 objectUrl: '',
                 thumbnailUrl: '',
-                capturedAt: new Date(),
+                capturedAt: capturedMetadata.capturedAt,
+                style: capturedMetadata.style,
+                orientation: capturedMetadata.orientation,
                 accepted: true,
                 delivery: {
                     dashboard: 'pending',
@@ -2073,12 +2088,60 @@
             renderSessionGallery();
             clearPreviewUrl();
             capturedPhoto = null;
+            capturedMetadata = null;
             frame.classList.remove('is-captured');
             photoActions.hidden = true;
             captureButton.hidden = false;
             captureButton.disabled = false;
             setCameraControlsVisible(true);
-            status.textContent = 'Photo added to your session gallery. Ready for another.';
+            status.textContent = 'Photo added to your session gallery. Sending to Telegram…';
+            void uploadPhotoToTelegram(photo);
+        }
+
+        async function uploadPhotoToTelegram(photo) {
+            try {
+                const formData = new FormData();
+                formData.append('photo', photo.blob, `${photo.id}.jpg`);
+                formData.append('photoId', photo.id);
+                formData.append('timestamp', photo.capturedAt.toISOString());
+                formData.append('style', photo.style);
+                formData.append('orientation', photo.orientation);
+
+                const response = await fetch(TELEGRAM_UPLOAD_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                let result;
+                try {
+                    result = await response.json();
+                } catch (error) {
+                    throw new Error(`Upload endpoint returned invalid JSON (HTTP ${response.status}).`);
+                }
+                if (!response.ok || result.success !== true) {
+                    throw new Error(result.error || `Photo upload failed (HTTP ${response.status}).`);
+                }
+
+                photo.delivery.telegram = 'sent';
+                await persistPhotoDelivery(photo);
+                if (!capturedPhoto && photoActions.hidden) {
+                    status.textContent = 'Photo sent to Telegram and saved in your local gallery.';
+                }
+            } catch (error) {
+                photo.delivery.telegram = 'failed';
+                await persistPhotoDelivery(photo);
+                console.error('Could not send the photo to Telegram:', error);
+                if (!capturedPhoto && photoActions.hidden) {
+                    status.textContent = 'Photo saved locally, but could not be sent to Telegram.';
+                }
+            }
+        }
+
+        async function persistPhotoDelivery(photo) {
+            try {
+                await storeGalleryPhoto(photo);
+            } catch (error) {
+                console.error('Could not save the Telegram delivery status:', error);
+            }
         }
 
         captureButton.addEventListener('click', capturePhoto);
@@ -2111,6 +2174,7 @@
             stream = null;
             clearPreviewUrl();
             capturedPhoto = null;
+            capturedMetadata = null;
         });
         window.addEventListener('pageshow', event => {
             if (event.persisted && !stream) {
