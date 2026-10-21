@@ -149,7 +149,6 @@
         #wishes {
             background: linear-gradient(180deg, #F6F4EB, #FBFAF5);
         }
-        #wishes-container > *,
         #wish-form-panel {
             border-color: rgba(165, 141, 84, 0.28);
             box-shadow: 0 12px 32px rgba(23, 68, 49, 0.055);
@@ -443,11 +442,6 @@
             border-color: rgba(165, 141, 84, 0.46);
             box-shadow: 0 18px 38px rgba(23, 68, 49, 0.11);
         }
-        #wishes-container > * {
-            background: linear-gradient(145deg, #fffdf8, #f2efe4);
-            border-color: rgba(165, 141, 84, 0.38);
-            box-shadow: 0 10px 26px rgba(23, 68, 49, 0.09);
-        }
         #wishes input,
         #wishes textarea {
             background-color: rgba(255, 255, 255, 0.82);
@@ -582,7 +576,7 @@
                 <a href="#countdown" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Countdown</a>
                 <a href="#timeline" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Timeline</a>
                 <a href="#schedule" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Venue</a>
-                <a href="#wishes" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Guestbook</a>
+                <a href="#wishes" class="inline-flex min-h-11 items-center px-1 hover:text-champagne-500 transition">Leave a Wish</a>
             </div>
             <a href="camera.html" class="flex min-h-11 items-center gap-2 bg-rosewood text-champagne-50 hover:bg-champagne-600 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition shadow-md hover:shadow-lg transform active:scale-95">
                 <i data-lucide="camera" class="w-4 h-4" aria-hidden="true"></i>
@@ -786,51 +780,28 @@
         </div>
     </section>
 
-    <!-- Wishes & Guestbook Section -->
+    <!-- Private guest wishes -->
     <section id="wishes" aria-labelledby="guestbook-heading" class="py-20 bg-white border-t border-champagne-200/50">
         <div class="max-w-5xl mx-auto px-4">
             <div class="text-center mb-12">
-                <span class="text-xs uppercase tracking-widest text-champagne-600 font-semibold">Leave A Note</span>
-                <h2 id="guestbook-heading" class="font-serif text-4xl text-rosewood mt-1">Guestbook & Warm Wishes</h2>
+                <span class="text-xs uppercase tracking-widest text-champagne-600 font-semibold">A private message for the couple</span>
+                <h2 id="guestbook-heading" class="font-serif text-4xl text-rosewood mt-1">Leave a Wish</h2>
                 <p class="text-sm text-rosewood/70 mt-2 max-w-md mx-auto">
-                    Share your love, advice, or favorite memory with us as we count down to our wedding.
+                    Your message is private and will only be visible to the couple. You can update it any time using this invitation link.
                 </p>
             </div>
 
-            <!-- Form and List Grid -->
-            <div class="grid lg:grid-cols-3 gap-10">
-                <!-- Wishes Form -->
-                <div id="wish-form-panel" class="lg:col-span-1 bg-champagne-50 p-6 sm:p-8 rounded-3xl border border-champagne-200/80 shadow-sm h-fit">
-                    <h3 class="font-serif text-xl text-rosewood mb-4">Send Your Wishes</h3>
-                    <form id="wish-form" onsubmit="handleWishSubmit(event)" class="space-y-4" aria-describedby="wish-form-status">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-name">Your Name</label>
-                            <input type="text" id="guest-name" name="guest-name" autocomplete="name" required aria-required="true" placeholder="e.g. Aunt Clara" 
-                                   class="w-full min-h-11 px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-relation">Relationship (Optional)</label>
-                            <input type="text" id="guest-relation" name="guest-relation" autocomplete="off" placeholder="e.g. College Friend, Cousin" 
-                                   class="w-full min-h-11 px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-message">Message</label>
-                            <textarea id="guest-message" name="guest-message" rows="4" required aria-required="true" placeholder="Write your warm wishes here..." 
-                                      class="w-full px-4 py-2.5 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400 resize-none"></textarea>
-                        </div>
-                        <p id="wish-form-status" class="text-sm text-rosewood/80" role="status" aria-live="polite"></p>
-                        <button type="submit" class="w-full min-h-11 py-3 bg-rosewood hover:bg-champagne-600 text-champagne-50 rounded-xl text-sm font-medium transition shadow-md">
-                            Post Wish
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Wishes Feed Grid -->
-                <div class="lg:col-span-2">
-                    <div id="wishes-container" class="grid sm:grid-cols-2 gap-4 max-h-[520px] overflow-y-auto pr-1" role="list" aria-label="Guest wishes">
-                        <!-- Dynamic wishes appended here -->
+            <div id="wish-form-panel" class="max-w-xl mx-auto bg-champagne-50 p-6 sm:p-8 rounded-3xl border border-champagne-200/80 shadow-sm">
+                <form id="wish-form" class="space-y-4" aria-describedby="wish-form-status">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-rosewood/70 mb-1" for="guest-message">Your wish</label>
+                        <textarea id="guest-message" name="guest-message" rows="5" maxlength="2000" required aria-required="true" disabled placeholder="Write a private message for the couple..." class="w-full px-4 py-3 bg-white border border-champagne-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-champagne-400 resize-y"></textarea>
                     </div>
-                </div>
+                    <p id="wish-form-status" class="text-sm text-rosewood/80" role="status" aria-live="polite"></p>
+                    <button id="wish-submit-button" type="submit" disabled class="w-full min-h-11 py-3 bg-rosewood hover:bg-champagne-600 text-champagne-50 rounded-xl text-sm font-medium transition shadow-md">
+                        Leave a Wish
+                    </button>
+                </form>
             </div>
         </div>
     </section>
@@ -872,113 +843,66 @@
             dressCode: "Formal"
         };
 
-        const guestCsvUrl = new URL('guests.csv', window.location.href);
-        var guestName = 'Honoured Guest';
+        const WEDDING_API_URL = 'https://wedding-flower-3107.sovisalloeung11.workers.dev';
+        var guestName = '';
+        let inviteCode = '';
+        let existingWish = false;
 
-        function parseGuestCsv(csvText) {
-            const rows = [];
-            let row = [];
-            let field = '';
-            let insideQuotes = false;
-
-            for (let index = 0; index < csvText.length; index++) {
-                const character = csvText[index];
-                if (character === '"') {
-                    if (insideQuotes && csvText[index + 1] === '"') {
-                        field += '"';
-                        index++;
-                    } else {
-                        insideQuotes = !insideQuotes;
-                    }
-                } else if (character === ',' && !insideQuotes) {
-                    row.push(field);
-                    field = '';
-                } else if ((character === '\n' || character === '\r') && !insideQuotes) {
-                    if (character === '\r' && csvText[index + 1] === '\n') {
-                        index++;
-                    }
-                    row.push(field);
-                    rows.push(row);
-                    row = [];
-                    field = '';
-                } else {
-                    field += character;
+        async function weddingApi(path, options = {}) {
+            const response = await fetch(`${WEDDING_API_URL}${path}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(options.headers || {})
                 }
+            });
+            let result;
+            try {
+                result = await response.json();
+            } catch (error) {
+                throw new Error(`The invitation service returned an invalid response (${response.status}).`);
             }
-
-            if (insideQuotes) {
-                throw new SyntaxError('The guest CSV contains an unclosed quoted field.');
-            }
-            if (field.length || row.length) {
-                row.push(field);
-                rows.push(row);
-            }
-
-            const nonemptyRows = rows.filter(values => values.some(value => value.trim()));
-            if (!nonemptyRows.length) {
-                throw new Error('The guest CSV is empty.');
-            }
-
-            const headers = nonemptyRows[0].map(value => value.trim().replace(/^\uFEFF/, '').toLowerCase());
-            const idColumn = headers.indexOf('id');
-            const nameColumn = headers.indexOf('name');
-            if (idColumn === -1 || nameColumn === -1) {
-                throw new Error('The guest CSV must contain id and name columns.');
-            }
-
-            return nonemptyRows.slice(1)
-                .map(values => ({
-                    id: (values[idColumn] || '').trim(),
-                    name: (values[nameColumn] || '').trim()
-                }))
-                .filter(guest => guest.id && guest.name);
-        }
-
-        async function loadGuestDataset() {
-            const response = await fetch(guestCsvUrl, { cache: 'no-store' });
             if (!response.ok) {
-                throw new Error(`Unable to load guests.csv (${response.status}).`);
+                throw new Error(result.error || `The invitation service returned ${response.status}.`);
             }
-            return parseGuestCsv(await response.text());
-        }
-
-        async function resolveGuestName(search = window.location.search) {
-            const params = new URLSearchParams(search);
-            const namedGuest = params.get('guest')?.trim();
-            if (namedGuest) {
-                return namedGuest;
-            }
-
-            const guestId = params.get('id')?.trim();
-            if (!guestId) {
-                return 'Honoured Guest';
-            }
-
-            const guestDataset = await loadGuestDataset();
-            const guest = guestDataset.find(entry => entry.id === guestId);
-            return guest?.name || 'Honoured Guest';
+            return result;
         }
 
         async function initializeGuestIdentity() {
             const greeting = document.getElementById('guest-greeting');
             const status = document.getElementById('guest-load-status');
+            const messageInput = document.getElementById('guest-message');
+            const submitButton = document.getElementById('wish-submit-button');
+            inviteCode = new URLSearchParams(window.location.search).get('code') || '';
+            if (!inviteCode) {
+                status.textContent = 'Use your personal invitation link to leave a private wish.';
+                status.classList.remove('hidden');
+                messageInput.disabled = true;
+                submitButton.disabled = true;
+                return;
+            }
+
             try {
-                guestName = await resolveGuestName();
+                const result = await weddingApi(`/api/wishes?code=${encodeURIComponent(inviteCode)}`);
+                guestName = result.guest.name;
+                messageInput.disabled = false;
+                submitButton.disabled = false;
+                existingWish = Boolean(result.wish);
+                greeting.textContent = `Dear ${guestName},`;
+                if (existingWish) {
+                    messageInput.value = result.wish.message;
+                    submitButton.textContent = 'Update Your Wish';
+                    status.textContent = 'You have already left a wish. You can edit and update it below.';
+                    status.classList.remove('hidden');
+                }
             } catch (error) {
                 console.error('Guest identification failed:', error);
-                guestName = 'Honoured Guest';
-                status.textContent = 'We could not load the guest list. Please check that you are using the latest invitation link.';
+                status.textContent = error.message || 'We could not verify this invitation link.';
                 status.classList.remove('hidden');
+                messageInput.disabled = true;
+                submitButton.disabled = true;
             }
-            greeting.textContent = `Dear ${guestName},`;
         }
-
-        // Preloaded Initial Guestbook Wishes
-        const defaultWishes = [
-            { name: "Grandma Evelyn", relation: "Family", message: "Wishing you both a lifetime filled with unconditional love, warmth, and everlasting joy! We can't wait to celebrate!", date: "Just now" },
-            { name: "Marcus & Elena", relation: "College Friends", message: "So thrilled to celebrate with you guys! Get ready for endless dancing at the reception!", date: "2 hours ago" },
-            { name: "David Chen", relation: "Family", message: "Welcome to the family! So happy for my brother. Wishing you two the absolute best.", date: "1 day ago" }
-        ];
 
         // Initialize Icons & UI on Load
         window.addEventListener('DOMContentLoaded', () => {
@@ -987,7 +911,7 @@
             lucide.createIcons();
             startCountdown();
             startTimelineReveal();
-            renderWishes(defaultWishes);
+            document.getElementById('wish-form').addEventListener('submit', handleWishSubmit);
             const sectionLinks = document.querySelector('.mobile-section-links');
             sectionLinks.addEventListener('focusin', event => {
                 const link = event.target.closest('a[href]');
@@ -1192,63 +1116,33 @@
             });
         }
 
-        // ------------------------------------
-        // GUESTBOOK WISHES LOGIC
-        // ------------------------------------
-        function renderWishes(wishes) {
-            const container = document.getElementById('wishes-container');
-            container.innerHTML = wishes.map(w => `
-                <article role="listitem" class="bg-champagne-50/70 p-5 rounded-2xl border border-champagne-200/60 flex flex-col justify-between shadow-sm hover:shadow transition">
-                    <p class="text-xs sm:text-sm text-rosewood/90 italic mb-4">"${escapeHtml(w.message)}"</p>
-                    <div class="pt-3 border-t border-champagne-200/40 flex justify-between items-end">
-                        <div>
-                            <h4 class="font-serif font-semibold text-rosewood text-sm">${escapeHtml(w.name)}</h4>
-                            ${w.relation ? `<span class="text-[11px] text-champagne-600">${escapeHtml(w.relation)}</span>` : ''}
-                        </div>
-                        <span class="text-[10px] text-rosewood/40">${w.date}</span>
-                    </div>
-                </article>
-            `).join('');
-        }
-
-        function handleWishSubmit(e) {
+        async function handleWishSubmit(e) {
             e.preventDefault();
-            const nameInput = document.getElementById('guest-name');
-            const relationInput = document.getElementById('guest-relation');
             const messageInput = document.getElementById('guest-message');
             const formStatus = document.getElementById('wish-form-status');
-
-            nameInput.setCustomValidity(nameInput.value.trim() ? '' : 'Please enter your name.');
             messageInput.setCustomValidity(messageInput.value.trim() ? '' : 'Please enter a message.');
-            if (!nameInput.checkValidity()) {
-                nameInput.reportValidity();
-                return;
-            }
             if (!messageInput.checkValidity()) {
                 messageInput.reportValidity();
                 return;
             }
-
-            const newWish = {
-                name: nameInput.value.trim(),
-                relation: relationInput.value.trim(),
-                message: messageInput.value.trim(),
-                date: "Just now"
-            };
-
-            defaultWishes.unshift(newWish);
-            renderWishes(defaultWishes);
-
-            // Reset form
-            nameInput.value = '';
-            relationInput.value = '';
-            messageInput.value = '';
-            formStatus.textContent = 'Your wish has been added to the guestbook.';
-        }
-
-        // Shared text helper
-        function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            const submitButton = document.getElementById('wish-submit-button');
+            const wasExistingWish = existingWish;
+            submitButton.disabled = true;
+            try {
+                await weddingApi('/api/wishes', {
+                    method: 'POST',
+                    body: JSON.stringify({ code: inviteCode, message: messageInput.value.trim() })
+                });
+                existingWish = true;
+                submitButton.textContent = 'Update Your Wish';
+                formStatus.textContent = wasExistingWish
+                    ? 'Your private wish has been saved. You can update it any time.'
+                    : 'Your private wish has been saved.';
+            } catch (error) {
+                formStatus.textContent = error.message || 'Your wish could not be saved. Please try again.';
+            } finally {
+                submitButton.disabled = false;
+            }
         }
 
     </script>
