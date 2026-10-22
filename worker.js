@@ -134,12 +134,13 @@ async function createGuest(env, name, sourceKey = null) {
             id: crypto.randomUUID(),
             name: name.trim(),
             invite_code: randomInviteCode(),
+            invite_status: 'not_invited',
             created_at: new Date().toISOString()
         };
         try {
             await env.DB.prepare(
-                'INSERT INTO guests (id, name, invite_code, created_at, source_key) VALUES (?, ?, ?, ?, ?)'
-            ).bind(guest.id, guest.name, guest.invite_code, guest.created_at, sourceKey).run();
+                'INSERT INTO guests (id, name, invite_code, invite_status, created_at, source_key) VALUES (?, ?, ?, ?, ?, ?)'
+            ).bind(guest.id, guest.name, guest.invite_code, guest.invite_status, guest.created_at, sourceKey).run();
             return guest;
         } catch (error) {
             if (!String(error.message).includes('UNIQUE constraint failed: guests.invite_code')) {
@@ -240,7 +241,7 @@ async function handleAdminApi(request, url, env) {
 
     if (path === '/api/admin/guests' && request.method === 'GET') {
         const { results } = await env.DB.prepare(
-            'SELECT id, name, invite_code, created_at FROM guests ORDER BY name COLLATE NOCASE'
+            'SELECT id, name, invite_code, invite_status, created_at FROM guests ORDER BY name COLLATE NOCASE'
         ).all();
         return jsonResponse(env, { guests: results });
     }

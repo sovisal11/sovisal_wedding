@@ -63,17 +63,32 @@
         .panel-heading h2 { margin-bottom: 5px; font-size: 25px; }
         .form-row { display: flex; align-items: end; gap: 10px; margin: 14px 0 20px; }
         .form-row .field { flex: 1; margin: 0; }
-        .guest-list, .wish-list, .photo-list { display: grid; gap: 12px; }
-        .guest-card, .list-card { border: 1px solid #e2dfd0; border-radius: 12px; padding: 15px; }
-        .guest-card { display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; align-items: center; gap: 15px; }
+        .wish-list, .photo-list { display: grid; gap: 12px; }
+        .guest-table-wrap { overflow-x: auto; border: 1px solid #e2dfd0; border-radius: 12px; }
+        .guest-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .guest-table th, .guest-table td { padding: 12px; border-bottom: 1px solid #e9e6dc; vertical-align: middle; }
+        .guest-table th { background: #f8f7f0; color: #596458; font-size: 12px; white-space: nowrap; }
+        .guest-table tbody tr:last-child td { border-bottom: 0; }
+        .guest-table td:first-child { min-width: 170px; font-weight: 600; }
+        .guest-controls { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(150px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+        .guest-controls .field { margin: 0; }
+        .guest-controls input, .guest-controls select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #cfcdbf; border-radius: 9px; background: white; }
+        .guest-controls input:focus, .guest-controls select:focus { outline: 2px solid #71866f; outline-offset: 1px; }
+        .guest-count { margin: 8px 0 12px; color: #687168; font-size: 13px; }
+        .guest-qr { width: 92px; min-width: 92px; }
         .qr-wrap { display: grid; justify-items: center; gap: 5px; color: #687168; font-size: 11px; }
         .qr-output { width: 92px; height: 92px; }
         .qr-output img, .qr-output canvas { display: block; width: 100%; height: 100%; }
-        .guest-name { margin: 0 0 7px; font: 21px Georgia, serif; overflow-wrap: anywhere; }
         .code { font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; }
-        .invite-url { display: block; max-width: 100%; margin-top: 6px; overflow-wrap: anywhere; color: #286047; font-size: 12px; }
+        .invite-url { display: block; max-width: 260px; overflow-wrap: anywhere; color: #286047; font-size: 12px; }
+        .invite-status { display: inline-block; padding: 4px 8px; border-radius: 99px; background: #f1efe3; color: #596458; font-size: 12px; white-space: nowrap; }
         .card-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 7px; }
         .card-actions .button { min-height: 36px; padding: 6px 10px; font-size: 12px; }
+        .guest-table .card-actions { justify-content: flex-start; }
+        .guest-empty { padding: 24px 16px; border: 1px dashed #d8d5c8; border-radius: 12px; color: #687168; text-align: center; }
+        .guest-table tbody tr[hidden] { display: none; }
+        .guest-table tbody tr:hover { background: #fcfbf7; }
+        .list-card { border: 1px solid #e2dfd0; border-radius: 12px; padding: 15px; }
         .list-card h3 { margin-bottom: 8px; font: 18px Georgia, serif; }
         .wish-message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
         .empty { padding: 32px 16px; border: 1px dashed #d8d5c8; border-radius: 12px; color: #687168; text-align: center; }
@@ -85,11 +100,9 @@
             .stat { padding: 13px 10px; }
             .stat-label { min-height: 32px; font-size: 11px; }
             .stat-value { font-size: 30px; }
-            .guest-card { grid-template-columns: 74px minmax(0, 1fr); gap: 10px; padding: 11px; }
-            .qr-output { width: 68px; height: 68px; }
-            .guest-name { font-size: 17px; }
-            .card-actions { grid-column: 1 / -1; justify-content: flex-start; }
             .form-row { align-items: stretch; flex-direction: column; }
+            .guest-controls { grid-template-columns: 1fr; }
+            .guest-table th, .guest-table td { padding: 9px; }
             .panel { padding: 15px; }
             .panel-heading { flex-direction: column; }
         }
@@ -151,7 +164,31 @@
                 </form>
                 <div class="note">Your existing guests.csv can be imported once. Its old sequential IDs are only used to prevent duplicate imports; each new invitation gets a fresh random code.</div>
                 <p><button id="import-guests-button" class="button secondary" type="button">Import guests.csv</button></p>
-                <div id="guest-list" class="guest-list"></div>
+                <div class="guest-controls" aria-label="Guest list controls">
+                    <div class="field">
+                        <label for="guest-search">Search guests</label>
+                        <input id="guest-search" type="search" placeholder="Search name or invite code" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="guest-filter">Filter</label>
+                        <select id="guest-filter">
+                            <option value="all">All Guests</option>
+                            <option value="invited">Invited</option>
+                            <option value="not_invited">Not Invited</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="guest-sort">Sort by</label>
+                        <select id="guest-sort">
+                            <option value="name-asc">Name A → Z</option>
+                            <option value="name-desc">Name Z → A</option>
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                <p id="guest-count" class="guest-count" role="status" aria-live="polite"></p>
+                <div id="guest-list"></div>
             </section>
 
             <section id="wishes-panel" class="panel hidden" role="tabpanel">
@@ -186,11 +223,25 @@
         const dashboardView = document.getElementById('dashboard-view');
         const dashboardStatus = document.getElementById('dashboard-status');
         const guestList = document.getElementById('guest-list');
+        const guestSearch = document.getElementById('guest-search');
+        const guestFilter = document.getElementById('guest-filter');
+        const guestSort = document.getElementById('guest-sort');
+        const guestCount = document.getElementById('guest-count');
         const wishList = document.getElementById('wish-list');
         const photoList = document.getElementById('photo-list');
         let token = sessionStorage.getItem(tokenKey) || '';
         let editingGuestId = null;
         let currentTab = 'guests';
+        let guestRecords = [];
+        let guestTableBody = null;
+        let guestEmptyRow = null;
+        let qrObserver = null;
+        const guestQrData = new WeakMap();
+        const guestFilterDefinitions = {
+            all: () => true,
+            invited: guest => guest.invite_status === 'invited',
+            not_invited: guest => guest.invite_status !== 'invited'
+        };
 
         async function api(path, options = {}) {
             const headers = { ...(options.headers || {}) };
@@ -232,16 +283,122 @@
             return button;
         }
 
+        function generateGuestQr(guest, output, label) {
+            if (output.dataset.generated === 'true') return;
+            output.dataset.generated = 'true';
+            if (typeof window.QRCode === 'function') {
+                new QRCode(output, {
+                    text: inviteUrl(guest.invite_code),
+                    width: 184,
+                    height: 184,
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } else {
+                label.textContent = `Code: ${guest.invite_code} (QR library unavailable)`;
+            }
+        }
+
+        function guestComparator(sort) {
+            if (sort === 'newest' || sort === 'oldest') {
+                const direction = sort === 'newest' ? -1 : 1;
+                return (left, right) => {
+                    const dateOrder = (Date.parse(left.guest.created_at) - Date.parse(right.guest.created_at)) * direction;
+                    return dateOrder || left.guest.name.localeCompare(right.guest.name, undefined, { sensitivity: 'base' });
+                };
+            }
+            const direction = sort === 'name-desc' ? -1 : 1;
+            return (left, right) => left.guest.name.localeCompare(right.guest.name, undefined, { sensitivity: 'base' }) * direction;
+        }
+
+        function updateGuestView(reorder = false) {
+            const query = guestSearch.value.trim().toLocaleLowerCase();
+            const filter = guestFilterDefinitions[guestFilter.value] || guestFilterDefinitions.all;
+            let visibleCount = 0;
+            for (const record of guestRecords) {
+                const matchesSearch = !query || record.searchName.includes(query) || record.searchCode.includes(query);
+                const visible = matchesSearch && filter(record.guest);
+                record.row.hidden = !visible;
+                if (visible) visibleCount++;
+            }
+            guestCount.textContent = `Showing ${visibleCount.toLocaleString()} of ${guestRecords.length.toLocaleString()} guests`;
+            if (guestEmptyRow) {
+                guestEmptyRow.hidden = visibleCount > 0;
+                guestEmptyRow.cells[0].textContent = query || guestFilter.value !== 'all'
+                    ? 'No guests match your search and filter.'
+                    : 'No guests to display.';
+            }
+            if (reorder && guestTableBody) {
+                const fragment = document.createDocumentFragment();
+                guestRecords.sort(guestComparator(guestSort.value));
+                for (const record of guestRecords) fragment.appendChild(record.row);
+                guestTableBody.appendChild(fragment);
+            }
+        }
+
         async function renderGuests() {
             const { guests } = await api('/api/admin/guests');
+            if (qrObserver) qrObserver.disconnect();
+            qrObserver = null;
+            if ('IntersectionObserver' in window) {
+                let observer;
+                observer = new IntersectionObserver(entries => {
+                    for (const entry of entries) {
+                        if (!entry.isIntersecting) continue;
+                        const { guest, output, label } = guestQrData.get(entry.target);
+                        generateGuestQr(guest, output, label);
+                        observer.unobserve(entry.target);
+                    }
+                }, { rootMargin: '160px' });
+                qrObserver = observer;
+            }
+            guestRecords = [];
+            guestTableBody = null;
+            guestEmptyRow = null;
             guestList.replaceChildren();
             if (!guests.length) {
-                guestList.innerHTML = '<div class="empty">No guests yet. Add a guest above or import guests.csv.</div>';
+                const empty = document.createElement('div');
+                empty.className = 'guest-empty';
+                empty.textContent = 'No guests yet. Add a guest above or import guests.csv.';
+                guestList.appendChild(empty);
+                guestCount.textContent = 'Showing 0 of 0 guests';
                 return;
             }
+            const tableWrap = document.createElement('div');
+            tableWrap.className = 'guest-table-wrap';
+            const table = document.createElement('table');
+            table.className = 'guest-table';
+            const head = document.createElement('thead');
+            head.innerHTML = '<tr><th scope="col">Name</th><th scope="col">Invite Code</th><th scope="col">Invite Link</th><th scope="col">Invite Status</th><th scope="col">QR</th><th scope="col">Actions</th></tr>';
+            guestTableBody = document.createElement('tbody');
+            guestEmptyRow = document.createElement('tr');
+            guestEmptyRow.hidden = true;
+            const emptyCell = document.createElement('td');
+            emptyCell.className = 'guest-empty';
+            emptyCell.colSpan = 6;
+            guestEmptyRow.appendChild(emptyCell);
             for (const guest of guests) {
-                const card = document.createElement('article');
-                card.className = 'guest-card';
+                guest.invite_status = guest.invite_status || 'not_invited';
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                nameCell.textContent = guest.name;
+                const codeCell = document.createElement('td');
+                codeCell.className = 'code';
+                codeCell.textContent = guest.invite_code;
+                const linkCell = document.createElement('td');
+                const link = document.createElement('a');
+                link.className = 'invite-url';
+                link.href = inviteUrl(guest.invite_code);
+                link.textContent = link.href;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                linkCell.appendChild(link);
+                const statusCell = document.createElement('td');
+                const status = document.createElement('span');
+                status.className = 'invite-status';
+                status.textContent = guest.invite_status === 'invited' ? 'Invited' : 'Not Invited';
+                statusCell.appendChild(status);
+                const qrCell = document.createElement('td');
+                qrCell.className = 'guest-qr';
                 const qrWrap = document.createElement('div');
                 qrWrap.className = 'qr-wrap';
                 const qrOutput = document.createElement('div');
@@ -249,34 +406,14 @@
                 const qrLabel = document.createElement('span');
                 qrLabel.textContent = 'Invite QR';
                 qrWrap.append(qrOutput, qrLabel);
-                if (typeof window.QRCode === 'function') {
-                    new QRCode(qrOutput, {
-                        text: inviteUrl(guest.invite_code),
-                        width: 184,
-                        height: 184,
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-                } else {
-                    qrLabel.textContent = `Code: ${guest.invite_code} (QR library unavailable)`;
-                }
-
-                const details = document.createElement('div');
-                const name = document.createElement('h3');
-                name.className = 'guest-name';
-                name.textContent = guest.name;
-                const code = document.createElement('span');
-                code.className = 'code';
-                code.textContent = guest.invite_code;
-                const link = document.createElement('a');
-                link.className = 'invite-url';
-                link.href = inviteUrl(guest.invite_code);
-                link.textContent = link.href;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                details.append(name, code, link);
+                qrCell.appendChild(qrWrap);
+                guestQrData.set(row, { guest, output: qrOutput, label: qrLabel });
+                if (qrObserver) qrObserver.observe(row);
+                else generateGuestQr(guest, qrOutput, qrLabel);
 
                 const actions = document.createElement('div');
                 actions.className = 'card-actions';
+                const actionsCell = document.createElement('td');
                 actions.append(
                     createButton('Copy link', 'secondary', async () => {
                         try {
@@ -304,9 +441,21 @@
                         }
                     })
                 );
-                card.append(qrWrap, details, actions);
-                guestList.appendChild(card);
+                actionsCell.appendChild(actions);
+                row.append(nameCell, codeCell, linkCell, statusCell, qrCell, actionsCell);
+                guestTableBody.appendChild(row);
+                guestRecords.push({
+                    guest,
+                    row,
+                    searchName: guest.name.toLocaleLowerCase(),
+                    searchCode: guest.invite_code.toLocaleLowerCase()
+                });
             }
+            guestTableBody.appendChild(guestEmptyRow);
+            table.append(head, guestTableBody);
+            tableWrap.appendChild(table);
+            guestList.appendChild(tableWrap);
+            updateGuestView(true);
         }
 
         async function renderWishes() {
@@ -406,6 +555,9 @@
             }
         });
         document.getElementById('logout-button').addEventListener('click', logOut);
+        guestSearch.addEventListener('input', () => updateGuestView());
+        guestFilter.addEventListener('change', () => updateGuestView());
+        guestSort.addEventListener('change', () => updateGuestView(true));
 
         document.getElementById('guest-form').addEventListener('submit', async event => {
             event.preventDefault();
@@ -488,11 +640,17 @@
                 const guests = rows.slice(1)
                     .map(row => ({ sourceId: (row[idIndex] || '').trim(), name: (row[nameIndex] || '').trim() }))
                     .filter(row => row.sourceId && row.name);
-                const result = await api('/api/admin/guests/import', {
-                    method: 'POST',
-                    body: JSON.stringify({ guests })
-                });
-                showStatus(`Imported ${result.imported.length} guests. ${result.skipped} previously imported rows were skipped.`);
+                let imported = 0;
+                let skipped = 0;
+                for (let index = 0; index < guests.length; index += 500) {
+                    const result = await api('/api/admin/guests/import', {
+                        method: 'POST',
+                        body: JSON.stringify({ guests: guests.slice(index, index + 500) })
+                    });
+                    imported += result.imported.length;
+                    skipped += result.skipped;
+                }
+                showStatus(`Imported ${imported} guests. ${skipped} previously imported rows were skipped.`);
                 await refreshDashboard();
             } catch (error) {
                 showStatus(error.message, true);
